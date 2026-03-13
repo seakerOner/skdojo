@@ -1,8 +1,10 @@
-org 0x10000
+bits 16
+org 0
 
 jmp start
 
 %include "./bootloader/x86-64/rm_printstring.asm"
+%include "./bootloader/x86-64/rm_a20bus.asm"
 ; %include "./bootloader/x86-64/rm_disk_load.asm"
 
 start_boot_pt2:
@@ -13,11 +15,37 @@ db "ENDING Seaker's Dojo BOOT STAGE 2...", 10, 13, 0
 
 start:
 
+; init registers
+cli                             ; clear interrupt flag
+
+; since we updated the code segment we must update DS, ES, SS 
+; (data segment/ extra segment/ stack segment respectively)
+mov ax, cs
+mov ds, ax
+mov es, ax
+mov ss, ax
+sti 
+
 mov si, start_boot_pt2
 call rm_print_string
 
+; BOOTLOADER STAGE 2 WILL:
+;
+; enable A20
+; detect RAM
+; load KERNEL
+; enter protected mode
+; enter long mode
+; jump to kernel
+
+; check if a20 is enabled with BIOS interrupt. if not, enable it
+
+call setbus_a20
+
 mov si, end_boot_pt2
 call rm_print_string
+
+jmp $
 
 ; 3 sections
 times ((512 * 2) + 510) - ($ - $$) db 0       ;  fill the rest of the boot sector with 0's

@@ -5,6 +5,8 @@ jmp start
 
 %include "./bootloader/x86-64/rm_printstring.asm"
 %include "./bootloader/x86-64/rm_a20bus.asm"
+%include "./bootloader/x86-64/rm_gdt.asm"
+%include "./bootloader/x86-64/rm_ram_detection.asm"
 ; %include "./bootloader/x86-64/rm_disk_load.asm"
 
 start_boot_pt2:
@@ -23,8 +25,9 @@ cli                             ; clear interrupt flag
 mov ax, cs
 mov ds, ax
 mov es, ax
-mov ss, ax
-sti 
+; mov ss, ax
+
+sti                                 
 
 mov si, start_boot_pt2
 call rm_print_string
@@ -33,14 +36,23 @@ call rm_print_string
 ;
 ; enable A20
 ; detect RAM
+; set GDT (Global Descriptor Table)
 ; load KERNEL
 ; enter protected mode
 ; enter long mode
 ; jump to kernel
 
 ; check if a20 is enabled with BIOS interrupt. if not, enable it
-
 call setbus_a20
+
+; detect RAM on system (what is reserved, bad memory, reclaimable and usable)
+call detect_ram
+
+mov si, MSG_NEWLINE
+call rm_print_string
+
+; set GDT (Global Descriptor Table) for protected mode
+call rm_set_gdt
 
 mov si, end_boot_pt2
 call rm_print_string
@@ -48,5 +60,5 @@ call rm_print_string
 jmp $
 
 ; 3 sections
-times ((512 * 2) + 510) - ($ - $$) db 0       ;  fill the rest of the boot sector with 0's
+times ((512 * 3) + 510) - ($ - $$) db 0       ;  fill the rest of the boot sector with 0's
 dw 0xAA55                       ;  last 2 bytes are the magic number signaling the end of the boot sector

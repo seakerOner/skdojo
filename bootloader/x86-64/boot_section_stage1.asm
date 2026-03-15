@@ -54,7 +54,7 @@ mov es, ax
 mov bx, 0x0000
 
 mov cl, 2                       ; sector ( sector 1 = boot stage 1)
-mov al, 3                       ; num of sectors
+mov al, 4                       ; num of sectors
 
 call disk_load
 

@@ -13,7 +13,7 @@ start_boot_pt2:
 db "STARTING Seaker's Dojo BOOT STAGE 2...", 10, 13, 0 
 
 end_boot_pt2:
-db "ENDING Seaker's Dojo BOOT STAGE 2...", 10, 13, 0
+db "ENDING Seaker's Dojo BOOT STAGE 2...", 10, 13, "ENTERING PROTECTED MODE/ LONG MODE AND GOING TO KERNEL..", 10 , 13, 0
 
 start:
 
@@ -25,7 +25,6 @@ cli                             ; clear interrupt flag
 mov ax, cs
 mov ds, ax
 mov es, ax
-; mov ss, ax
 
 sti                                 
 
@@ -51,14 +50,18 @@ call detect_ram
 mov si, MSG_NEWLINE
 call rm_print_string
 
-; set GDT (Global Descriptor Table) for protected mode
-call rm_set_gdt
-
 mov si, end_boot_pt2
 call rm_print_string
 
-jmp $
+; TODO:
+; load kernel from disk before going to protected mode (bios interrupts only work in real mode 16bits)
 
-; 3 sections
+; load GDT (Global Descriptor Table) for protected mode
+call rm_to_pm                       ; changes to protected mode and goes to 'jump_to_kernel'
+
+
+%include "./bootloader/x86-64/rm_to_pm.asm"
+
+; 4 sectors
 times ((512 * 3) + 510) - ($ - $$) db 0       ;  fill the rest of the boot sector with 0's
 dw 0xAA55                       ;  last 2 bytes are the magic number signaling the end of the boot sector

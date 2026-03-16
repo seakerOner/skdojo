@@ -31,7 +31,8 @@ bootloader_stage2.bin: $(BT_PATH)/boot_section_stage2.asm
 	$(ASMCC) $< -f bin -o ./build/$@
 
 run: dojo.img
-	$(VM) -drive format=raw,file=./build/dojo.img
+	$(VM) -drive format=raw,file=./build/dojo.img -net none -d int,cpu_reset -no-reboot
+	#$(VM) -drive format=raw,file=./build/dojo.img -net none 
 
 clean:
 	rm -f ./build/*

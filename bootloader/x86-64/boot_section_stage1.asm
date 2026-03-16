@@ -21,6 +21,7 @@ db "ENDING Seaker's Dojo BOOT STAGE 1...", 10, 13, 0
 
 BOOT_DRIVE: db 0
 BOOT_STAGE2_OFFSET equ 0x1000
+KERNEL_OFFSET equ 0x2000
 
 ;
 ;
@@ -55,6 +56,18 @@ mov bx, 0x0000
 
 mov cl, 2                       ; sector ( sector 1 = boot stage 1)
 mov al, 4                       ; num of sectors
+
+call disk_load
+
+; load kernel from disk segments
+; kernel will be accessed at the end of stage2
+
+mov ax, KERNEL_OFFSET
+mov es, ax
+mov bx, 0x0000
+
+mov cl, 6                       ; sector ( sector 5 = end of stage 2 )
+mov al, 20                      ; num of sectors 
 
 call disk_load
 

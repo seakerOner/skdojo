@@ -53,9 +53,6 @@ call rm_print_string
 mov si, end_boot_pt2
 call rm_print_string
 
-; TODO:
-; load kernel from disk before going to protected mode (bios interrupts only work in real mode 16bits)
-
 ; load GDT (Global Descriptor Table) for protected mode
 call rm_to_pm                       ; changes to protected mode and goes to 'jump_to_kernel'
 

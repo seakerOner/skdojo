@@ -1,9 +1,11 @@
+#include "vga.h"
 
 void kmain() {
-    volatile char* vga = (volatile char*)0xB8000;
-
-    vga[0] = 'K';
-    vga[1] = 0x0F;
-
+    vga_clear_screen();
+    vga_print("Welcome to the Dojo's Kernel");
+    vga_newline();
+    vga_print("---> Using VGA text mode");
+    vga_newline();
+    
     while (1);
 }

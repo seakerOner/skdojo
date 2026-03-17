@@ -67,7 +67,7 @@ mov es, ax
 mov bx, 0x0000
 
 mov cl, 6                       ; sector ( sector 5 = end of stage 2 )
-mov al, 20                      ; num of sectors 
+mov al, 25                      ; num of sectors 
 
 call disk_load
 

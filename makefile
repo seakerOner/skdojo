@@ -24,10 +24,14 @@ ifeq ($(ARQ), $(ARQ_ARM))
 	@echo "This arquitecture is not implemented"
 endif
 
+# create image ---
+
 dojo.img: bootloader_stage1.bin bootloader_stage2.bin kernel.bin
 	cat ./build/bootloader_stage1.bin \
 		./build/bootloader_stage2.bin \
 		./build/kernel.bin > ./build/$@
+
+# bootloader ---
 
 bootloader_stage1.bin: $(BT_PATH)/boot_section_stage1.asm
 	$(ASMCC) $< -f bin -o ./build/$@
@@ -35,12 +39,19 @@ bootloader_stage1.bin: $(BT_PATH)/boot_section_stage1.asm
 bootloader_stage2.bin: $(BT_PATH)/boot_section_stage2.asm
 	$(ASMCC) $< -f bin -o ./build/$@
 
-kernel.o: ./kernel/kernel.c
+# kernel ---
+
+kernel.o: ./kernel/kernel.c 
 	$(CC) -ffreestanding -nostdlib -m32 -c $< -o ./build/$@
 
-kernel.bin: kernel.o
-	$(LD) -nostdlib -m elf_i386 -Ttext 0x20000 -e kmain ./build/kernel.o -o ./build/kernel.elf
+vga.o: ./kernel/vga.c
+	$(CC) -ffreestanding -nostdlib -m32 -c $^ -o ./build/$@
+
+kernel.bin: kernel.o vga.o
+	$(LD) -nostdlib -m elf_i386 -Ttext 0x20000 -e kmain ./build/*.o -o ./build/kernel.elf
 	objcopy -O binary ./build/kernel.elf ./build/kernel.bin
+
+# commands ---
 
 run: dojo.img
 	$(VM) -drive format=raw,file=./build/dojo.img -net none -d int,cpu_reset -no-reboot

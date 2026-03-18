@@ -36,6 +36,21 @@ void vga_print(const char* msg) {
     }
 }
 
+void vga_putc(const char character) {
+    if (character == '\n') {
+        vga_newline();
+        return;
+    } 
+
+    if (vga.row >= VGA_ROWS) 
+        vga_scroll();
+
+    vga.vga_base[vga.index++] = character;
+    vga.vga_base[vga.index++] = 0x0F;
+
+    vga.row = vga.index / VGA_ROW_LEN;
+}
+
 void vga_gotoline(const int line) {
     if (line >= VGA_ROWS) {
         vga_scroll();

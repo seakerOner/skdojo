@@ -8,5 +8,7 @@ void kmain() {
 
     vga_print("Welcome to the Dojo's Kernel \n");
     vga_print("---> Using VGA text mode \n");
+
+    while (1);
 }
 

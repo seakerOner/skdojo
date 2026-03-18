@@ -3,9 +3,10 @@
 
 bits 16
 rm_to_pm:
-; load GDT (Global Descriptor Table) for protected mode
-cli
 
+cli         ; disable interrupts until GDT, IDT, PIC and PROTECTED MODE is configured 
+
+; load GDT (Global Descriptor Table) for protected mode
 lgdt [gdt_descriptor]
 
 ; ACTIVATE Protected mode

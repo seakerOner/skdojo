@@ -19,19 +19,21 @@ void vga_clear_screen() {
 }
 
 void vga_print(const char* msg) {
-    if (vga.row >= VGA_ROWS) 
-        vga_scroll();
-
     while (*msg) {
         if (*msg == '\n') {
             vga_newline();
             msg++;
             continue;
         } 
+
+        if (vga.row >= VGA_ROWS) 
+            vga_scroll();
+
         vga.vga_base[vga.index++] = *msg++;
         vga.vga_base[vga.index++] = 0x0F;
+
+        vga.row = vga.index / VGA_ROW_LEN;
     }
-    vga.row = vga.index / VGA_ROW_LEN;
 }
 
 void vga_gotoline(const int line) {

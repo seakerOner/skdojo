@@ -25,7 +25,7 @@ gdt_start:
 gdt_null: 
     dd 0
     dd 0
-    ;dq 0
+
 gdt_code: 
     dw 0xFFFF
     dw 0x0

@@ -7,7 +7,6 @@ jmp start
 %include "./bootloader/x86-64/rm_a20bus.asm"
 %include "./bootloader/x86-64/rm_gdt.asm"
 %include "./bootloader/x86-64/rm_ram_detection.asm"
-; %include "./bootloader/x86-64/rm_disk_load.asm"
 
 start_boot_pt2:
 db "STARTING Seaker's Dojo BOOT STAGE 2...", 10, 13, 0 

@@ -66,8 +66,15 @@ kernel.bin: $(KERNEL_OBJS)
 # commands ---
 
 run: dojo.img
-	$(VM) -drive format=raw,file=./build/dojo.img -net none -d int,cpu_reset -no-reboot
-	#$(VM) -drive format=raw,file=./build/dojo.img -net none 
+	$(VM) -drive format=raw,if=ide,file=./build/dojo.img -net none 
+
+rundebug: dojo.img
+	$(VM) \
+		-drive file=./build/dojo.img,format=raw \
+		-net none -d int,cpu_reset \
+		-debugcon stdio \
+		-global isa-debugcon.iobase=0xe9 \
+		-no-reboot 
 
 clean:
 	rm -f ./build/*

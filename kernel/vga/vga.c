@@ -1,5 +1,6 @@
 #include "vga.h"
 
+// its okay to have a global state because VGA is synchronous
 vga_videobuffer vga =  {
     .index = 0,
     .row = 0,

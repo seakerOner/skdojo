@@ -14,14 +14,6 @@ db "STARTING Seaker's Dojo BOOT STAGE 2...", 10, 13, 0
 end_boot_pt2:
 db "ENDING Seaker's Dojo BOOT STAGE 2...", 10, 13, "ENTERING PROTECTED MODE/ LONG MODE AND GOING TO KERNEL..", 10 , 13, 0
 
-bios_ext_unsupported:
-mov si, MSG_BIOS_EXTENSIONS_ERR
-call rm_print_string
-jmp $
-
-MSG_BIOS_EXTENSIONS_ERR:
-db "[ERROR] BIOS extensions for disk UNSUPPORTED", 10, 13, 0 
-
 start:
 
 ; init registers
@@ -47,14 +39,6 @@ call rm_print_string
 ; enter protected mode
 ; enter long mode
 ; jump to kernel
-
-mov ah, 0x41 
-mov bx, 0x55AA
-int 0x13 
-
-jc bios_ext_unsupported
-cmp bx, 0xAA55
-jne bios_ext_unsupported
 
 
 

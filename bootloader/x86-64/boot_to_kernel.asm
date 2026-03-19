@@ -5,8 +5,9 @@ jmp_to_kernel:
 ; TODO: activate long mode
 
 ; for now kernel is in 32bits
-mov eax, 0x20000            ; kernel address
-call eax                    
+; jmp 0x08:0x20000            ; GDT_CODE_SEG = 0x08
+mov eax, 0x20000
+call eax
 
 ; If the kernel ever returns the bootloader just hangs
 jmp $

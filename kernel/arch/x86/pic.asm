@@ -4,13 +4,12 @@
 ; But interrupts 0-31 = Exceptions errors from CPU
 ; IRQs must start at 32+
 
-bits 32
+bits 64 
 
 ; MASTER PIC -> 0x20 (command), 0x21 (data)
 ; SLAVE  PIC -> 0xA0 (command), 0xA1 (data)
 
 remap_pic:
-pusha
 ; set initialization mode
 mov al, 0x11
 out 0x20, al
@@ -43,7 +42,5 @@ out 0x21, al
 mov al, 0xFF
 out 0xA1, al
 
-
-popa
 ret
 

@@ -45,22 +45,22 @@ bootloader_stage2.bin: $(BT_PATH)/boot_section_stage2.asm
 # kernel ---
 
 kernel.o: ./kernel/kernel.c 
-	$(CC) -ffreestanding -nostdlib -m32 -c $< -o ./build/$@
+	$(CC) -ffreestanding -nostdlib -m64 -c $< -o ./build/$@
 
 vga.o: ./kernel/vga/vga.c
-	$(CC) -ffreestanding -nostdlib -m32 -c $^ -o ./build/$@
+	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
 
 k_interrupts.o: ./kernel/interrupts/k_interrupts.c
-	$(CC) -ffreestanding -nostdlib -m32 -c $^ -o ./build/$@
+	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
 
 interrupts.o: $(ARCH_PATH)/interrupts.asm
-	$(ASMCC) -f elf32 $< -o ./build/$@
+	$(ASMCC) -f elf64 $< -o ./build/$@
 
 KERNEL_OBJS = kernel.o interrupts.o k_interrupts.o vga.o
 KERNEL_OBJS_BUILD = $(addprefix ./build/, $(KERNEL_OBJS))
 
 kernel.bin: $(KERNEL_OBJS)
-	$(LD) -nostdlib -m elf_i386 -Ttext 0x20000 -e kmain $(KERNEL_OBJS_BUILD) -o ./build/kernel.elf
+	$(LD) -nostdlib -m elf_x86_64 -Ttext 0x20000 -e kmain $(KERNEL_OBJS_BUILD) -o ./build/kernel.elf
 	objcopy -O binary ./build/kernel.elf ./build/kernel.bin
 
 # commands ---

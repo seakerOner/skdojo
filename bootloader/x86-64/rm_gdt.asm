@@ -40,14 +40,17 @@ gdt_data:
     db 10010010b
     db 11001111b
     db 0x0              
+gdt_code64:
+    dq 0x00AF9A000000FFFF
 gdt_end:
 
 gdt_descriptor:
 dw gdt_end - gdt_start - 1
 dd (gdt_start + 0x10000)
 
-GDT_CODE_SEG equ gdt_code - gdt_start
-GDT_DATA_SEG equ gdt_data - gdt_start
+GDT_CODE_SEG equ gdt_code - gdt_start     ; 0x08
+GDT_DATA_SEG equ gdt_data - gdt_start     ; 0x10
+GDT_CODE64_SEG equ gdt_code64 - gdt_start ; 0x18
 
 ; code -> base=0 limit=4GB executable readable
 ; data -> base=0 limit=4GB writable

@@ -9,7 +9,6 @@ jmp start
 ; includes
 
 %include "./bootloader/x86-64/rm_printstring.asm"
-%include "./bootloader/x86-64/rm_disk_load.asm"
 
 ; globals
 
@@ -52,24 +51,6 @@ mov [BOOT_DRIVE], dl            ; save the disk identifier from where the boot c
 mov si, start_boot_pt1
 call rm_print_string
 
-; load disk segments to load stage2 of bootloader into RAM
-;
-; stage2 will:
-;   prepare CPU (protected mode, long mode, etc)
-;   load kernel
-
-mov ax, BOOT_STAGE2_OFFSET
-mov es, ax
-mov bx, 0x0000
-
-mov cl, 2                       ; sector ( sector 1 = boot stage 1)
-mov al, 4                       ; num of sectors
-
-call disk_load
-
-; load kernel from disk segments
-; kernel will be accessed at the end of stage2
-
 mov ah, 0x41 
 mov bx, 0x55AA
 int 0x13        ; verify support for extensions
@@ -78,20 +59,21 @@ jc bios_ext_unsupported
 cmp bx, 0xAA55
 jne bios_ext_unsupported
 
+; load disk segments to load stage2 of bootloader into RAM
+;
+; stage2 will:
+;   prepare CPU (protected mode, long mode, etc)
+;   load kernel
+
+mov si, dap_stage2
+mov ah, 0x42
+mov dl, [BOOT_DRIVE]
+int 0x13
+
 ; This disk load version has a max of 25 sectors
-
-; mov ax, KERNEL_OFFSET
-; mov es, ax
-; mov bx, 0x0000
-;
-; mov cl, 6                       ; sector ( sector 5 = end of stage 2 )
-; mov al, 25                      ; num of sectors 
-;
-; call disk_load
-
 ; so we use extended bios disk read
 
-mov si, dap
+mov si, dap_kernel
 mov ah, 0x42
 mov dl, [BOOT_DRIVE]
 int 0x13
@@ -101,13 +83,22 @@ call rm_print_string
 
 jmp 0x1000:0               ; bootloader stage 2
 
-dap:
+dap_stage2:
+db 0x10 
+db 0 
+dw 34                         ; num of sectors (max 125, if more is needed more calls are made)
+dw 0x0000                     ; offset
+dw 0x1000 
+dd 1                          
+dd 0
+
+dap_kernel:
 db 0x10 
 db 0 
 dw 125                        ; num of sectors (max 125, if more is needed more calls are made)
 dw 0x0000                     ; offset
 dw 0x2000 
-dd 5                          ; sector ( sector 5 = end of stage 2 )
+dd 35                          ; sector ( sector 5 = end of stage 2 )
 dd 0
 
 times 510 - ($ - $$) db 0       ;  fill the rest of the boot sector with 0's

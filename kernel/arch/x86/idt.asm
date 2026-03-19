@@ -11,28 +11,13 @@
 ; NOTE:
 ;       This is the bare minimum implementation for a valid protected mode
 ;
-; Each entry of the GDT has 8 bytes
-;
-; REF: https://wiki.osdev.org/Global_Descriptor_Table#Segment_Descriptor
-;
-;
-; TODO:
-;       Decide if we want user land with DPL as such with user code/data
-;
-;       Decide to add TSS (Task state segments)
-;       used for:
-;           --> Interrupts
-;           --> Multitasking
-;           --> stack switching
-;
-
 
 idt_start:
 
-TIMES 256 dq 0
+TIMES 256 dq 0, 0   ; 16 bytes each for 64-bit mode
 
 idt_end:
 
 idt_descriptor:
     dw idt_end - idt_start - 1
-    dd idt_start               ; offset
+    dq idt_start               ; offset

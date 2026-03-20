@@ -56,7 +56,13 @@ k_interrupts.o: ./kernel/interrupts/k_interrupts.c
 interrupts.o: $(ARCH_PATH)/interrupts.asm
 	$(ASMCC) -f elf64 $< -o ./build/$@
 
-KERNEL_OBJS = kernel.o interrupts.o k_interrupts.o vga.o
+themes.o: ./kernel/themes/themes.c
+	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
+
+printk.o: ./kernel/printk/printk.c
+	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
+
+KERNEL_OBJS = kernel.o interrupts.o k_interrupts.o vga.o themes.o printk.o
 KERNEL_OBJS_BUILD = $(addprefix ./build/, $(KERNEL_OBJS))
 
 kernel.bin: $(KERNEL_OBJS)

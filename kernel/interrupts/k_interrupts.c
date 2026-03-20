@@ -1,4 +1,4 @@
-#include "../vga/vga.h"
+#include "../printk/printk.h"
 #include "k_interrupts.h"
 
 unsigned char irq1_scanmap[128] = 
@@ -90,6 +90,6 @@ void irq1_kernel_intrpt() {
         key = key - 'a' + 1;
 
     if (key)
-        vga_putc(key);
+        putck(key);
 
 }

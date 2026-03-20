@@ -9,6 +9,12 @@ cli         ; disable interrupts until GDT, IDT, PIC and PROTECTED MODE is confi
 ; load GDT (Global Descriptor Table) for protected mode
 lgdt [gdt_descriptor]
 
+; disable cursor
+mov ah, 0x01        ; cursor shape
+mov ch, 0x20        ; set bit 5 to disable cursor
+mov cl, 0x07        ; end scan line
+int 0x10            ; disable cursor
+
 ; ACTIVATE Protected mode
 mov eax, cr0
 or eax, 1

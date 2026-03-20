@@ -1,9 +1,10 @@
 bits 32
 jmp_to_kernel:
-; we will activate long mode and then jump to kernel
- call set_paging
 
- jmp 0x18:(long_mode_entry + 0x10000)           ; 0x18 is 64-bit code
+; we will activate long mode and then jump to kernel
+call set_paging
+
+jmp 0x18:(long_mode_entry + 0x10000)           ; 0x18 is 64-bit code
 
  bits 64
 
@@ -17,8 +18,10 @@ mov ss, ax
 mov rbp, 0x90000
 mov rsp, rbp
 
+
 mov rax, 0x20000
 call rax
+
 ; If the kernel ever returns the bootloader just hangs
 jmp $
 
@@ -28,7 +31,7 @@ set_paging:
 
     mov edi, pml4_table
     mov ecx, (4096 * 3)/4  
-    xor eax, eax
+    xor eax, eax            ; fill with 0's
     rep stosd
 
     ; PML4 -> PDPT
@@ -41,7 +44,7 @@ set_paging:
     or eax, 0b11
     mov [pdpt_table], eax
 
-    ; PD -> 2MB identity map
+    ; PD -> 2MB identity map    (kernel is responsible to load more memory)
     mov eax, 0x00000000         ; physical memory 0
     or eax, 0b10000011          ; present + writable + huge page
     mov [pd_table], eax

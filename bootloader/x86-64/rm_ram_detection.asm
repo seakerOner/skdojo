@@ -108,12 +108,12 @@ rm_print_memmap:
     call rm_print_string
 
     ; length 
+
     mov eax, [di+12]
     call rm_print_hex32
 
     mov eax, [di+8]
     call rm_print_hex32
-
     ; type
     mov eax, [di+16]
 

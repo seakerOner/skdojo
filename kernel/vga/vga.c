@@ -7,65 +7,65 @@ vga_videobuffer vga =  {
     .vga_base = (volatile char*)0xB8000
 };
 
-void vga_clear_screen() {
+void vga_clear_screen(const unsigned short colors) {
     volatile char* vga_ref = vga.vga_base;
 
     for (int x = 0; x < VGA_SIZE; x += 2) {
         *vga_ref++ = ' ';
-        *vga_ref++ = 0x0F;
+        *vga_ref++ = colors;
     }
 
     vga.index = 0;
     vga.row = 0;
 }
 
-void vga_print(const char* msg) {
+void vga_print(const char* msg, const unsigned short colors) {
     while (*msg) {
         if (*msg == '\n') {
-            vga_newline();
+            vga_newline(colors);
             msg++;
             continue;
         } 
 
         if (vga.row >= VGA_ROWS) 
-            vga_scroll();
+            vga_scroll(colors);
 
         vga.vga_base[vga.index++] = *msg++;
-        vga.vga_base[vga.index++] = 0x0F;
+        vga.vga_base[vga.index++] = colors;
 
         vga.row = vga.index / VGA_ROW_LEN;
     }
 }
 
-void vga_putc(const char character) {
+void vga_putc(const char character, const unsigned short colors) {
     if (character == '\n') {
-        vga_newline();
+        vga_newline(colors);
         return;
     } 
 
     if (vga.row >= VGA_ROWS) 
-        vga_scroll();
+        vga_scroll(colors);
 
     vga.vga_base[vga.index++] = character;
-    vga.vga_base[vga.index++] = 0x0F;
+    vga.vga_base[vga.index++] = colors;
 
     vga.row = vga.index / VGA_ROW_LEN;
 }
 
-void vga_gotoline(const int line) {
+void vga_gotoline(const int line, const unsigned short colors) {
     if (line >= VGA_ROWS) {
-        vga_scroll();
+        vga_scroll(colors);
         return;
     }
     vga.row = line;
     vga.index = vga.row * VGA_ROW_LEN;
 }
 
-void vga_newline() {
-    vga_gotoline(vga.row + 1);
+void vga_newline(const unsigned short colors) {
+    vga_gotoline(vga.row + 1, colors);
 }
 
-void vga_scroll() {
+void vga_scroll(const unsigned short colors) {
     volatile char* v = vga.vga_base;
 
     for (int x = 0; x < VGA_SIZE - VGA_ROW_LEN; x++) {
@@ -74,7 +74,7 @@ void vga_scroll() {
 
     for (int x = VGA_SIZE - VGA_ROW_LEN; x < VGA_SIZE; x += 2) {
         v[x] = ' ';
-        v[x + 1] = 0x0F;
+        v[x + 1] = colors;
     }
 
     vga.row = VGA_ROWS - 1;

@@ -1,14 +1,19 @@
 #ifndef VGA_H
 #define VGA_H
 
-void vga_clear_screen(); 
+//
+// vga colors
+//
+#include "./vga_colors.h"
 
-void vga_print(const char* msg);
-void vga_putc(const char character);
+void vga_clear_screen(const unsigned short colors); 
 
-void vga_newline();
-void vga_gotoline(const int line);
-void vga_scroll();
+void vga_print(const char* msg, const unsigned short colors);
+void vga_putc(const char character, const unsigned short colors);
+
+void vga_newline(const unsigned short colors);
+void vga_gotoline(const int line, const unsigned short colors);
+void vga_scroll(const unsigned short colors);
 
 #define VGA_COLUMNS 80
 #define VGA_ROWS 25

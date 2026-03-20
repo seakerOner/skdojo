@@ -1,6 +1,9 @@
 #include "interrupts/k_interrupts.h"
 #include "themes/themes.h"
+
 #include "video/video_sensei.h"
+#include "video/compositor_sensei.h"
+
 #include "terminal/terminal.h"
 #include "printk/printk.h"
 
@@ -13,7 +16,14 @@ void kmain() {
     create_video_sensei();
     VideoSensei* sensei_v = get_video_sensei();
 
-    new_terminal(sensei_v->screen_height, sensei_v->screen_width);
+    create_compositor_sensei();
+    u32 root_window_id = compositor_create_window(0, 0, 
+                                    sensei_v->screen_width, 
+                                    sensei_v->screen_height, sensei_v);
+
+    compositor_focus(root_window_id);
+
+    // new_terminal(sensei_v->screen_height, sensei_v->screen_width);
 
     dojo_set_theme(THEME_UGLYDOJO);
 

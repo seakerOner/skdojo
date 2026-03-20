@@ -1,10 +1,11 @@
 #include "../video/video_sensei.h"
+#include "../video/compositor_sensei.h"
 
 DojoTheme dojo_theme;
 
 void dojo_clear_screen() {
     VideoSensei* sensei = get_video_sensei();
-    sensei->driver.clear(sensei->driver.get_framebuffer(), dojo_theme.palette.main_colors);
+    sensei->driver.clear(compositor_get_focused()->framebuffer, dojo_theme.palette.main_colors);
 }
 
 static inline void set_vga_theme() {

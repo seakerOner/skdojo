@@ -10,13 +10,19 @@
 
 typedef struct {
     volatile char* vga_base;
-    u32 index;
+    u32 start_row;
+    u32 start_col;
+
     u32 row;
+    u32 col;
+
     u32 max_collumns;
     u32 max_rows;
 } vga_videobuffer;
 
-vga_videobuffer vga_new_videobuffer(u32 start_row, u32 max_collumns, u32 max_rows);
+void vga_new_videobuffer(u32 start_row, u32 start_col, 
+                            u32 max_collumns, u32 max_rows, 
+                            vga_videobuffer* out);
 
 void vga_clear_screen(vga_videobuffer* vga, const StyleColor colors); 
 

@@ -1,43 +1,65 @@
-#include "../vga/vga.h"
-#include "./themes.h"
+#include "../video/video_sensei.h"
 
 DojoTheme dojo_theme;
 
-void dojo_check_video_mode() {
-    // TODO: Check VGA support via PCI
-    // hardcoded to VGA for now
-    dojo_theme.video_type = VGA_MODE;
-    dojo_theme.cursor = '_';
-}
-
 void dojo_clear_screen() {
-    switch (dojo_theme.video_type) {
-        case VGA_MODE:
-            vga_clear_screen(dojo_theme.metadata.vga.main_colors);
-            break;
-        default:
-            break;
-    }
+    VideoSensei* sensei = get_video_sensei();
+    sensei->driver.clear(sensei->driver.get_framebuffer(), dojo_theme.palette.main_colors);
 }
 
 static inline void set_vga_theme() {
-    VgaThemeMetadata* _vga = &dojo_theme.metadata.vga;
+    dojo_theme.cursor = '_';
+    ThemePalette* _vga = &dojo_theme.palette;
     
     switch (dojo_theme.name) {
         case THEME_UGLYDOJO:
-            _vga->main_colors     = VGA_BKG_BLUE | VGA_FGR_LIGHT_GRAY;
-            _vga->success_color   = VGA_BKG_BLUE | VGA_FGR_GREEN;
-            _vga->err_color       = VGA_BKG_BLUE | VGA_FGR_LIGHT_RED;
-            _vga->highlight_color = VGA_BKG_BLUE | VGA_FGR_YELLOW;
-            _vga->comment_color   = VGA_BKG_BLUE | VGA_FGR_BLACK;
+            _vga->main_colors.bg.value        = VGA_BLUE;
+            _vga->main_colors.fg.value        = VGA_LIGHT_GRAY;
+            _vga->success_color.bg.value      = VGA_BLUE;
+            _vga->success_color.fg.value      = VGA_GREEN;
+            _vga->err_color.bg.value          = VGA_BLUE;
+            _vga->err_color.fg.value          = VGA_LIGHT_RED;
+            _vga->highlight_color.bg.value    = VGA_BLUE;
+            _vga->highlight_color.fg.value    = VGA_YELLOW;
+            _vga->comment_color.bg.value      = VGA_BLUE;
+            _vga->comment_color.fg.value      = VGA_BLACK;
             break;
         case THEME_ZENMODE:
-            _vga->main_colors     = VGA_BKG_LIGHT_GRAY | VGA_FGR_BLACK;
-            _vga->success_color   = VGA_BKG_LIGHT_GRAY | VGA_FGR_GREEN;
-            _vga->err_color       = VGA_BKG_LIGHT_GRAY | VGA_FGR_RED;
-            _vga->highlight_color = VGA_BKG_LIGHT_GRAY | VGA_FGR_DARK_GRAY;
-            _vga->comment_color   = VGA_BKG_LIGHT_GRAY | VGA_FGR_BROWN;
+            _vga->main_colors.bg.value        = VGA_LIGHT_GRAY;
+            _vga->main_colors.fg.value        = VGA_BLACK;
+            _vga->success_color.bg.value      = VGA_LIGHT_GRAY;
+            _vga->success_color.fg.value      = VGA_GREEN;
+            _vga->err_color.bg.value          = VGA_LIGHT_GRAY;
+            _vga->err_color.fg.value          = VGA_RED;
+            _vga->highlight_color.bg.value    = VGA_LIGHT_GRAY;
+            _vga->highlight_color.fg.value    = VGA_DARK_GRAY;
+            _vga->comment_color.bg.value      = VGA_LIGHT_GRAY;
+            _vga->comment_color.fg.value      = VGA_BROWN;
             break;
+        case THEME_PURE:
+            _vga->main_colors.bg.value        = VGA_WHITE;
+            _vga->main_colors.fg.value        = VGA_BLACK;
+            _vga->success_color.bg.value      = VGA_WHITE;
+            _vga->success_color.fg.value      = VGA_GREEN;
+            _vga->err_color.bg.value          = VGA_WHITE;
+            _vga->err_color.fg.value          = VGA_RED;
+            _vga->highlight_color.bg.value    = VGA_WHITE;
+            _vga->highlight_color.fg.value    = VGA_DARK_GRAY;
+            _vga->comment_color.bg.value      = VGA_WHITE;
+            _vga->comment_color.fg.value      = VGA_BROWN;
+            break;
+        case THEME_DARKMODE:
+            _vga->main_colors.bg.value        = VGA_BLACK;
+            _vga->main_colors.fg.value        = VGA_WHITE;
+            _vga->success_color.bg.value      = VGA_BLACK;
+            _vga->success_color.fg.value      = VGA_LIGHT_GREEN;
+            _vga->err_color.bg.value          = VGA_BLACK;
+            _vga->err_color.fg.value          = VGA_RED;
+            _vga->highlight_color.bg.value    = VGA_BLACK;
+            _vga->highlight_color.fg.value    = VGA_YELLOW;
+            _vga->comment_color.bg.value      = VGA_BLACK;
+            _vga->comment_color.fg.value      = VGA_BLUE;
+
         default:
             break;
     }
@@ -47,13 +69,7 @@ static inline void set_vga_theme() {
 void dojo_set_theme(ThemesNames theme) {
     dojo_theme.name = theme;
 
-    switch (dojo_theme.video_type) {
-        case VGA_MODE:
-            set_vga_theme();
-            break;
-        default:
-            break;
-    }
+    set_vga_theme();
 }
 
 const DojoTheme* dojo_get_theme() {

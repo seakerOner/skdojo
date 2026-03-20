@@ -1,41 +1,44 @@
 #ifndef THEMES_H
 #define THEMES_H
 
-#include "../vga/vga_colors.h"
+#include "../inttype.h"
+#include "../drivers/video/vga/vga_colors.h"
+
+typedef struct {
+    u32 value;
+} Color;
+
+typedef struct {
+    Color fg;
+    Color bg;
+} StyleColor;
 
 // Name of Dojo color Themes
 typedef enum {
     THEME_UGLYDOJO,
     THEME_ZENMODE ,
+    THEME_PURE ,
+    THEME_DARKMODE,
 } ThemesNames;
 
 // structure of Dojo Theme for VGA
 typedef struct {
-    unsigned short main_colors;     // background, foreground and cursor colors
-    unsigned short err_color;
-    unsigned short success_color;
-    unsigned short highlight_color;
-    unsigned short comment_color;
-} VgaThemeMetadata;
-
-// different types of video output
-typedef enum {
-    VGA_MODE,
-} VideoType;
+    StyleColor main_colors;     // background, foreground and cursor colors
+    StyleColor err_color;
+    StyleColor success_color;
+    StyleColor highlight_color;
+    StyleColor comment_color;
+} ThemePalette;
 
 // theme in use
 typedef struct {
-    VideoType video_type;
     ThemesNames name;
     char cursor;
-    union {
-        VgaThemeMetadata vga;
-    } metadata;
+    ThemePalette palette;
 } DojoTheme;
 
-void      dojo_check_video_mode();
-void      dojo_set_theme(ThemesNames theme);
-void      dojo_clear_screen();
+void             dojo_set_theme(ThemesNames theme);
+void             dojo_clear_screen();
 const DojoTheme* dojo_get_theme();
 
 #endif

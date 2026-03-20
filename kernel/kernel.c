@@ -1,5 +1,7 @@
 #include "interrupts/k_interrupts.h"
 #include "themes/themes.h"
+#include "video/video_sensei.h"
+#include "terminal/terminal.h"
 #include "printk/printk.h"
 
 // TODO: (Memory Managment)
@@ -8,10 +10,15 @@
 void kmain() {
     init_interrupts_x86();
 
-    dojo_check_video_mode();
+    create_video_sensei();
+    VideoSensei* sensei_v = get_video_sensei();
+
+    new_terminal(sensei_v->screen_height, sensei_v->screen_width);
 
     dojo_set_theme(THEME_UGLYDOJO);
+
     dojo_clear_screen();
+
 
     printk("Welcome to the Dojo!\n");
     printk("---> Using VGA text mode \n");

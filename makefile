@@ -47,14 +47,27 @@ bootloader_stage2.bin: $(BT_PATH)/boot_section_stage2.asm
 kernel.o: ./kernel/kernel.c 
 	$(CC) -ffreestanding -nostdlib -m64 -c $< -o ./build/$@
 
-vga.o: ./kernel/vga/vga.c
+#
+# DRIVERS
+#
+vga.o: ./kernel/drivers/video/vga/vga.c
 	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
 
+vgadriver.o: ./kernel/drivers/video/vga/vga_driver.c
+	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
+
+#
+# CPU INTERRUPTS
+#
 k_interrupts.o: ./kernel/interrupts/k_interrupts.c
 	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
 
 interrupts.o: $(ARCH_PATH)/interrupts.asm
 	$(ASMCC) -f elf64 $< -o ./build/$@
+
+#
+# KERNEL EXTENSIONS
+#
 
 themes.o: ./kernel/themes/themes.c
 	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
@@ -62,7 +75,17 @@ themes.o: ./kernel/themes/themes.c
 printk.o: ./kernel/printk/printk.c
 	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
 
-KERNEL_OBJS = kernel.o interrupts.o k_interrupts.o vga.o themes.o printk.o
+terminal.o: ./kernel/terminal/terminal.c
+	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
+
+#
+# SENSEIS
+#
+
+videosensei.o: ./kernel/video/video_sensei.c
+	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
+
+KERNEL_OBJS = kernel.o interrupts.o k_interrupts.o vga.o vgadriver.o themes.o printk.o terminal.o videosensei.o
 KERNEL_OBJS_BUILD = $(addprefix ./build/, $(KERNEL_OBJS))
 
 kernel.bin: $(KERNEL_OBJS)

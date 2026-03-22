@@ -31,6 +31,7 @@ void vga_putc(vga_videobuffer* vga, const char character, const StyleColor color
 
 void vga_newline(vga_videobuffer* vga, const StyleColor colors);
 void vga_gotoline(vga_videobuffer* vga, const u32 line, const StyleColor colors);
+void vga_getcolumn(vga_videobuffer* vga, u32* col);
 void vga_scroll(vga_videobuffer* vga, const StyleColor colors);
 
 #define VGA_COLUMNS 80

@@ -33,6 +33,7 @@ void kmain() {
     printk("Senseis activated:\n"
             "-- Video Sensei\n"
             "-- Window Manager Sensei\n"
+            "-- Keyboard Sensei\n"
             "\n");
 
     u32 second_id = wmanager_create_window(
@@ -43,16 +44,18 @@ void kmain() {
     wmanager_focus(second_id);
     dojo_clear_screen();
 
-    printk("CURRENT FOCUS: \n");
-    putck(((char)sensei_wmanager->focused) | '0');
-    
+    DojoTerminal second_terminal = new_terminal(wmanager_get_window(second_id));
+
     wmanager_focus(root_window_id);
-    // new_terminal(sensei_v->screen_height, sensei_v->screen_width);
+    DojoTerminal root_terminal = new_terminal(wmanager_get_window(root_window_id));
 
+    while (1) {
+        u32 focused_window = wmanager_get_focused()->id;
 
-
-
-
-    while (1);
+        if (root_terminal.window->id == focused_window)
+            terminal_poll_events(&root_terminal);
+        if (second_terminal.window->id == focused_window)
+            terminal_poll_events(&second_terminal);
+    }
 }
 

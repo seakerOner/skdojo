@@ -79,6 +79,10 @@ void vga_gotoline(vga_videobuffer* vga, const u32 line, const StyleColor colors)
     vga->col = 0;
 }
 
+void vga_getcolumn(vga_videobuffer* vga, u32* col) {
+    *col = vga->col;
+}
+
 void vga_newline(vga_videobuffer* vga, const StyleColor colors) {
     vga_gotoline(vga, vga->row + 1, colors);
 }

@@ -25,6 +25,9 @@ void driver_vga_gotoline(void* fb, const u32 line, const StyleColor colors) {
     vga_videobuffer* vga = (vga_videobuffer *)fb;
     vga_gotoline(vga, line, colors);
 }
+void driver_vga_getcolumn(void* fb, u32* col) {
+    *col = ((vga_videobuffer *)fb)->col;
+}
 u64  driver_vga_framebuffer_size() {
     return sizeof(vga_videobuffer);
 };

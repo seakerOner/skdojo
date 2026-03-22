@@ -29,6 +29,7 @@ typedef struct {
     void (*scroll)           (void* fb, const StyleColor colors);
     void (*newline)          (void* fb, const StyleColor colors);
     void (*gotoline)         (void* fb, const u32 line, const StyleColor colors);
+    void (*getcolumn)        (void* fb, u32* col);
     u64  (*framebuffer_size) (); // use this with allocation when mem model is done
     void (*new_framebuffer)  (u32 start_row, u32 start_col, 
                                 u32 max_collumns, u32 max_rows, 

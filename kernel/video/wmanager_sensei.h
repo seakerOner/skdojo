@@ -10,6 +10,7 @@
 // TODO: Change fb_stub for dynamic memory when mem model is done
 
 typedef struct {
+    u32 id;
     u32 start_row;
     u32 start_col;
     u32 width;
@@ -31,6 +32,7 @@ WManagerSensei* get_wmanager_sensei();
 i32 wmanager_create_window(u32 row, u32 col, u32 width, u32 height, VideoSensei* sensei);
 
 DojoWindow* wmanager_get_focused();
+DojoWindow* wmanager_get_window(u32 id);
 void wmanager_focus(u32 id);
 
 void wmanager_render();

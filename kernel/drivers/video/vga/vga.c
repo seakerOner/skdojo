@@ -7,7 +7,6 @@ static inline u32 vga_calc_index(vga_videobuffer* vga) {
     return (abs_row * VGA_COLUMNS + abs_col) * VGA_BYTES_PER_CHAR;
 }
 
-// TODO:
 void vga_new_videobuffer(u32 start_row, u32 start_col, 
                             u32 max_collumns, u32 max_rows, 
                             vga_videobuffer* out_fb) {

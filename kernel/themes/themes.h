@@ -19,6 +19,7 @@ typedef enum {
     THEME_ZENMODE ,
     THEME_PURE ,
     THEME_DARKMODE,
+    THEME_MATRIX,
 } ThemesNames;
 
 // structure of Dojo Theme for VGA

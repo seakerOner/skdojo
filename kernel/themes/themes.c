@@ -1,11 +1,11 @@
 #include "../video/video_sensei.h"
-#include "../video/compositor_sensei.h"
+#include "../video/wmanager_sensei.h"
 
 DojoTheme dojo_theme;
 
 void dojo_clear_screen() {
     VideoSensei* sensei = get_video_sensei();
-    sensei->driver.clear(compositor_get_focused()->framebuffer, dojo_theme.palette.main_colors);
+    sensei->driver.clear(wmanager_get_focused()->framebuffer, dojo_theme.palette.main_colors);
 }
 
 static inline void set_vga_theme() {
@@ -60,7 +60,19 @@ static inline void set_vga_theme() {
             _vga->highlight_color.fg.value    = VGA_YELLOW;
             _vga->comment_color.bg.value      = VGA_BLACK;
             _vga->comment_color.fg.value      = VGA_BLUE;
-
+            break;
+        case THEME_MATRIX:
+            _vga->main_colors.bg.value        = VGA_BLACK;
+            _vga->main_colors.fg.value        = VGA_GREEN;
+            _vga->success_color.bg.value      = VGA_BLACK;
+            _vga->success_color.fg.value      = VGA_GREEN;
+            _vga->err_color.bg.value          = VGA_BLACK;
+            _vga->err_color.fg.value          = VGA_RED;
+            _vga->highlight_color.bg.value    = VGA_BLACK;
+            _vga->highlight_color.fg.value    = VGA_YELLOW;
+            _vga->comment_color.bg.value      = VGA_BLACK;
+            _vga->comment_color.fg.value      = VGA_LIGHT_BLUE;
+            break;
         default:
             break;
     }

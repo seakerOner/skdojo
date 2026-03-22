@@ -56,6 +56,9 @@ vga.o: ./kernel/drivers/video/vga/vga.c
 vgadriver.o: ./kernel/drivers/video/vga/vga_driver.c
 	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
 
+ps2keyboard.o: ./kernel/drivers/keyboard/ps2.c
+	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
+
 #
 # CPU INTERRUPTS
 #
@@ -88,7 +91,14 @@ videosensei.o: ./kernel/video/video_sensei.c
 wmanagersensei.o: ./kernel/video/wmanager_sensei.c
 	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
 
-KERNEL_OBJS = kernel.o interrupts.o k_interrupts.o vga.o vgadriver.o themes.o printk.o terminal.o videosensei.o wmanagersensei.o 
+keyboardsensei.o: ./kernel/keyboard/keyboard_sensei.c
+	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
+
+#
+# Build kernel
+#
+
+KERNEL_OBJS = kernel.o interrupts.o k_interrupts.o vga.o vgadriver.o themes.o printk.o terminal.o videosensei.o wmanagersensei.o ps2keyboard.o keyboardsensei.o
 KERNEL_OBJS_BUILD = $(addprefix ./build/, $(KERNEL_OBJS))
 
 kernel.bin: $(KERNEL_OBJS)

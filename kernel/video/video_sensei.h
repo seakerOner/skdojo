@@ -23,17 +23,27 @@ typedef enum {
 } VideoType;
 
 typedef struct {
-    void (*putc)             (void* fb, const char c, const StyleColor colors);
-    void (*print)            (void* fb, const char* msg, const StyleColor colors);
+    void (*draw_cell)        (void* fb, u32 row, u32 col, char c, StyleColor style);
+    void (*read_cell)        (void* fb, u32 row, u32 col, char* out, StyleColor* style_out);
     void (*clear)            (void* fb, const StyleColor colors);
-    void (*scroll)           (void* fb, const StyleColor colors);
-    void (*newline)          (void* fb, const StyleColor colors);
-    void (*gotoline)         (void* fb, const u32 line, const StyleColor colors);
-    void (*getcolumn)        (void* fb, u32* col);
+
     u64  (*framebuffer_size) (); // use this with allocation when mem model is done
     void (*new_framebuffer)  (u32 start_row, u32 start_col, 
-                                u32 max_collumns, u32 max_rows, 
-                                void* out_fb);
+            u32 max_collumns, u32 max_rows, 
+            void* out_fb);
+
+    // legacy
+    // void (*putc)             (void* fb, const char c, const StyleColor colors);
+    // void (*print)            (void* fb, const char* msg, const StyleColor colors);
+    // void (*clear)            (void* fb, const StyleColor colors);
+    // void (*scroll)           (void* fb, const StyleColor colors);
+    // void (*newline)          (void* fb, const StyleColor colors);
+    // void (*gotoline)         (void* fb, const u32 line, const StyleColor colors);
+    // void (*getcolumn)        (void* fb, u32* col);
+    //
+    // void (*getrow)           (void* fb, u32* row);
+    // void (*setcursor)        (void* fb, u32 row, u32 col);
+    //
 } VideoDriver;
 
 typedef struct {

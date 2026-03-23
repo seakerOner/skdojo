@@ -21,22 +21,14 @@ void kmain() {
     create_wmanager_sensei();
     WManagerSensei* sensei_wmanager = get_wmanager_sensei();
 
-    u32 root_window_id = wmanager_create_window(0, 0, 
+    i32 root_window_id = wmanager_create_window(0, 0, 
                                     sensei_v->screen_width/2 - 1, 
                                     sensei_v->screen_height, sensei_v);
     wmanager_focus(root_window_id);
     dojo_clear_screen();
 
-    printk("---> Using VGA text mode \n");
 
-    printk("Welcome to the Dojo!\n\n");
-    printk("Senseis activated:\n"
-            "-- Video Sensei\n"
-            "-- Window Manager Sensei\n"
-            "-- Keyboard Sensei\n"
-            "\n");
-
-    u32 second_id = wmanager_create_window(
+    i32 second_id = wmanager_create_window(
                                      0,
                                      sensei_v->screen_width/2, 
                                      sensei_v->screen_width/2, 
@@ -44,10 +36,21 @@ void kmain() {
     wmanager_focus(second_id);
     dojo_clear_screen();
 
-    DojoTerminal second_terminal = new_terminal(wmanager_get_window(second_id));
+    DojoTerminal second_terminal = terminal_new(wmanager_get_window(second_id));
 
     wmanager_focus(root_window_id);
-    DojoTerminal root_terminal = new_terminal(wmanager_get_window(root_window_id));
+    DojoTerminal root_terminal = terminal_new(wmanager_get_window(root_window_id));
+
+
+    terminal_print(&root_terminal, "Welcome to the Dojo!\nContact: seakerone@proton.me\n\n");
+    terminal_print(&root_terminal, "Using VGA text mode \n");
+    terminal_print(&root_terminal, "Senseis activated:\n"
+            "-- Video Sensei\n"
+            "-- Window Manager Sensei\n"
+            "-- Keyboard Sensei\n"
+            "\n");
+
+    terminal_putc(&root_terminal, '>');
 
     while (1) {
         u32 focused_window = wmanager_get_focused()->id;

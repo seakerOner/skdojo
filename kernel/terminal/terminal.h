@@ -14,10 +14,16 @@ typedef struct {
     char cursor_char;      // from DojoTheme 
 } DojoTerminal;
 
-DojoTerminal new_terminal(DojoWindow* window);
+DojoTerminal terminal_new(DojoWindow* window);
 
-void print_terminal(DojoTerminal* terminal, char* string);
-void putc_terminal(DojoTerminal* terminal, char c);
+void terminal_print(DojoTerminal* terminal, char* string);
+void terminal_putc(DojoTerminal* terminal, char c);
+
+void terminal_newline(DojoTerminal* terminal);
+void terminal_gotoline(DojoTerminal* terminal, const u32 line);
+void terminal_scroll(DojoTerminal* terminal);
+
+
 
 void terminal_poll_events(DojoTerminal* terminal);
 

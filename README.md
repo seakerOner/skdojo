@@ -3,9 +3,15 @@
 **Seaker's Dojo (skdojo)** is a bare-metal computing environment 
 designed for direct interaction with the machine
 
-It is not a tradicional operating system. 
+> One of our greatest freedoms is how we react to things. 
+> After repeated attempts by ill-intentioned actors to further push the 
+> mass surveillance agenda at the OS level, I got sick of all of it.
+>
+> skdojo has its own bootloader, kernel, drivers, programming language and tools.
+
+It is not a traditional operating system. 
 Maybe it is not an operating system at all in the modern sense, 
-where the responsabilities and use cases are uncountable.
+where the responsibilities and use cases are countless.
 
 skdojo is a **dojo for computation**; a place to create, run, and explore programs from within the system itself.
 
@@ -70,9 +76,9 @@ DojoTheme provides:
 - cursor style
 - visual semantics (error, success, highlight)
 
-## status
+## Status
 
-- 2 stage bootloader for x86 systems
+- 2-stage bootloader for x86 systems
     - Boot from BIOS
     - Loads disk sections with BIOS extensions
     - RAM detection
@@ -82,7 +88,7 @@ DojoTheme provides:
     - Protected Mode 
     - Long mode (64-bit)
 - Kernel structure in C
-    - VGA text ouput
+    - VGA text output
     - Keyboard Input (IRQ-driven)
 
 ## In Progress
@@ -93,7 +99,7 @@ DojoTheme provides:
 
 # Notes
 
-- Writen in:
+- Written in:
     - Assembly (bootloader)
     - C (kernel)
 - Boot process:

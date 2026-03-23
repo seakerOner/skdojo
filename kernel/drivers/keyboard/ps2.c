@@ -1,5 +1,9 @@
 #include "./ps2.h"
 
+// 
+// PS/2 Scan Code US layout
+//
+
 unsigned char ps2_scanmap[128] = 
 {
     0, 27, '1','2','3','4','5','6','7','8','9','0','-','=', '\b',
@@ -30,6 +34,51 @@ unsigned char ps2_scanmap_shift[128] =
     '*',
     0,
     ' ',
+};
+
+KeyCode ps2_keymap_table[128] = {
+    [0x02] = KEY_1,
+    [0x03] = KEY_2,
+    [0x04] = KEY_3,
+    [0x05] = KEY_4,
+    [0x06] = KEY_5,
+    [0x07] = KEY_6,
+    [0x08] = KEY_7,
+    [0x09] = KEY_8,
+    [0x0A] = KEY_9,
+    [0x0B] = KEY_0,
+
+    [0x1E] = KEY_A,
+    [0x30] = KEY_B,
+    [0x2E] = KEY_C,
+    [0x20] = KEY_D,
+    [0x12] = KEY_E,
+    [0x21] = KEY_F,
+    [0x22] = KEY_G,
+    [0x23] = KEY_H,
+    [0x17] = KEY_I,
+    [0x24] = KEY_J,
+    [0x25] = KEY_K,
+    [0x26] = KEY_L,
+    [0x32] = KEY_M,
+    [0x31] = KEY_N,
+    [0x18] = KEY_O,
+    [0x19] = KEY_P,
+    [0x10] = KEY_Q,
+    [0x13] = KEY_R,
+    [0x1F] = KEY_S,
+    [0x14] = KEY_T,
+    [0x16] = KEY_U,
+    [0x2F] = KEY_V,
+    [0x11] = KEY_W,
+    [0x2D] = KEY_X,
+    [0x15] = KEY_Y,
+    [0x2C] = KEY_Z,
+
+    [0x1C] = KEY_ENTER,
+    [0x0E] = KEY_BACKSPACE,
+    [0x0F] = KEY_TAB,
+    [0x39] = KEY_SPACE
 };
 
 static int ps2_shift      = 0;
@@ -106,7 +155,7 @@ KeyEvent ps2_keyboard_translate(unsigned char scancode) {
         return event;
     }
 
-    event.key = ps2_scanmap[code];
+    event.key = ps2_keymap_table[code];
     event.alt = ps2_alt;
     event.ctrl = ps2_ctrl;
     event.super = ps2_super;
@@ -115,8 +164,6 @@ KeyEvent ps2_keyboard_translate(unsigned char scancode) {
     event.ascii = ps2_shift ? ps2_scanmap_shift[code] : ps2_scanmap[code];
 
     event.pressed = !(scancode & 0x80);
-
-
 
     return event;
 }

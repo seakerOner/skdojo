@@ -13,7 +13,7 @@ x86BT_PATH = ./bootloader/x86-64
 
 ARCH_PATH = NULL
 
-CC = gcc
+CC = gcc -Wall -Wextra
 LD = ld
 
 ifeq ($(ARQ), $(ARQ_X86_64))

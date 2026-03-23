@@ -18,7 +18,25 @@ mov ss, ax
 mov rbp, 0x90000
 mov rsp, rbp
 
+; address passed as an argument to the kernel with relevant information 
+mov rdi, 0x50000    
 
+mov rax, MEMMAP+0x10000
+mov [rdi], rax 
+
+movzx rax , word [MEMMAP_ENTRIES+0x10000]   ; zero extend to 64bits
+mov [rdi+8], rax
+
+mov rax, pml4_table+0x10000
+mov [rdi+16], rax
+
+mov rax, pdpt_table+0x10000
+mov [rdi+24], rax
+
+mov rax, pd_table+0x10000
+mov [rdi+32], rax
+ 
+mov rdi, 0x50000
 mov rax, 0x20000
 call rax
 

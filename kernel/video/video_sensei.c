@@ -15,15 +15,6 @@ void create_video_sensei() {
     video_sensei.driver.framebuffer_size    = (void *)driver_vga_framebuffer_size;
     video_sensei.driver.new_framebuffer     = (void *)driver_vga_new_framebuffer;
 
-    // video_sensei.driver.putc                = (void *)driver_vga_putc;
-    // video_sensei.driver.print               = (void *)driver_vga_print;
-    // video_sensei.driver.scroll              = (void *)driver_vga_scroll;
-    // video_sensei.driver.gotoline            = (void *)driver_vga_gotoline;
-    // video_sensei.driver.getcolumn           = (void *)driver_vga_getcolumn;
-    // video_sensei.driver.getrow              = (void *)driver_vga_getrow;
-    // video_sensei.driver.newline             = (void *)driver_vga_newline;
-    //video_sensei.driver.setcursor           = (void *)driver_vga_setcursor;
-
     video_sensei.screen_width  = VGA_COLUMNS;
     video_sensei.screen_height = VGA_ROWS;
 

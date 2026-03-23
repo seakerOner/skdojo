@@ -44,7 +44,6 @@ void vga_read_cell(vga_videobuffer* vga, u32 row, u32 col, char* out, StyleColor
 }
 
 void vga_clear(vga_videobuffer* vga, const StyleColor colors) {
-    volatile char* vga_ref = vga->vga_base;
     for (u32 r = 0; r < vga->max_rows; r++) {
         for (u32 x = 0; x < vga->max_collumns; x++) {
             vga_draw_cell(vga, r, x, ' ', colors);

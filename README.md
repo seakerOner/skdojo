@@ -3,12 +3,6 @@
 **Seaker's Dojo (skdojo)** is a bare-metal computing environment 
 designed for direct interaction with the machine
 
-> One of our greatest freedoms is how we react to things. 
-> After repeated attempts by ill-intentioned actors to further push the 
-> mass surveillance agenda at the OS level, I got sick of all of it.
->
-> skdojo has its own bootloader, kernel, drivers, programming language and tools.
-
 It is not a traditional operating system. 
 Maybe it is not an operating system at all in the modern sense, 
 where the responsibilities and use cases are countless.
@@ -46,8 +40,10 @@ a component responsible for managing and abstracting a specific domain.
 Senseis act as coordinators between the dojo (kernel) and hardware drivers.
 
 Examples:
-- `VideoSensei` -> manages video output 
-- **(planned)** `KeyboardSensei`, `DiskSensei`, etc.
+- `VideoSensei`     -> manages video output 
+- 'WManagerSensei'  -> manages window creation
+- 'KeyboardSensei'  -> manages keyboard events
+- **(planned)** `DiskSensei`, etc.
 
 They provide:
 - a stable interface to the kernel
@@ -78,7 +74,8 @@ DojoTheme provides:
 
 ## Status
 
-- 2-stage bootloader for x86 systems
+### Bootloader
+    - 2-stage bootloader for x86 systems
     - Boot from BIOS
     - Loads disk sections with BIOS extensions
     - RAM detection
@@ -87,13 +84,27 @@ DojoTheme provides:
     - IDT
     - Protected Mode 
     - Long mode (64-bit)
-- Kernel structure in C
+### Kernel
+    - Kernel structure in C
     - VGA text output
     - Keyboard Input (IRQ-driven)
+### Video System 
+    - VGA text mode driver 
+    - Generic cell-based rendering interface 
+    - Framebuffer abstraction per window 
+### Input 
+    - PS/2 keyboard driver 
+    - Interrupt-driven event system 
+    - Keyboard event queue
+### Window System 
+    - Multiple windows
+    - Focus management
+    - Independent framebuffers
 
 ## In Progress
 
 - Further develop Bootloader and Kernel
+- Compositor system for multi-window rendering
 - Block-based system implementation
 - Dojo environment (REPL / interactive programming model)
 

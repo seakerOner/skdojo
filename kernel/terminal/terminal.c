@@ -2,16 +2,38 @@
 
 DojoTerminal terminal_new(DojoWindow* window) {
     const DojoTheme* theme = dojo_get_theme();
-    VideoSensei* sensei_v   = get_video_sensei();
     DojoTerminal term;
 
-    term.window = window;
-    term.cursor_char = theme->cursor;
-    term.cursor_row  = 0;
-    term.cursor_col  = 0;
+    term.window                 = window;
+    term.cursor_char            = theme->cursor;
+    term.cursor_row             = 0;
+    term.cursor_col             = 0;
+    // term.history.capacity       = TERMINAL_MAX_HISTORY;
+    // term.history.count          = 0;
+    // term.history.line_len       = TERMINAL_BUFFER_LEN;
+    term.input_buffer.cursor    = 0;
+    term.input_buffer.len       = TERMINAL_BUFFER_LEN;
 
     terminal_putc(&term, '>');
     return term;
+}
+
+void terminal_printDEC(DojoTerminal* terminal, u64 num) {
+    char buffer[32] = {0};
+    int x = 0;
+
+    if (num == 0) {
+        terminal_putc(terminal, '0');
+        return;
+    }
+
+    while (num > 0) {
+        buffer[x++] = (num%10) | '0';
+        num /= 10;
+    }
+
+    while (x--) 
+        terminal_putc(terminal, buffer[x]);
 }
 
 void terminal_putc(DojoTerminal *terminal, char c) {
@@ -38,13 +60,9 @@ void terminal_putc(DojoTerminal *terminal, char c) {
 }
 
 void terminal_print(DojoTerminal* terminal, char* string) {
-    VideoSensei* sensei_v = get_video_sensei();
-    const DojoTheme* theme = dojo_get_theme();
-
     while (*string) {
         terminal_putc(terminal, *string++);
     }
-
 }
 
 void terminal_newline(DojoTerminal* terminal) {
@@ -103,9 +121,6 @@ void terminal_scroll(DojoTerminal* terminal) {
 }
 
 static inline void terminal_backspace(DojoTerminal* terminal) {
-    VideoSensei* sensei_v = get_video_sensei();
-    const DojoTheme* theme = dojo_get_theme();
-
     terminal->cursor_col--;
     terminal_putc(terminal, ' ');
 
@@ -113,8 +128,6 @@ static inline void terminal_backspace(DojoTerminal* terminal) {
 }
 
 void terminal_poll_events(DojoTerminal* terminal){
-    VideoSensei* sensei_v = get_video_sensei();
-    const DojoTheme* theme = dojo_get_theme();
 
     while(keyboard_has_events()) {
         KeyEvent ev;

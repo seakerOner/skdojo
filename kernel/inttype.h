@@ -14,5 +14,6 @@ typedef signed long long int   i64;
 
 typedef float                  f32;
 typedef double                 f64;
+typedef u64                 size_t;
 
 #endif

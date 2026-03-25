@@ -12,9 +12,6 @@
 #include "printk/printk.h"
 
 
-// TODO: (Memory Managment)
-//   Use the e820 RAM information from bootloader to know how many usable memory to page
-
 void kmain(BiosBootInfo* boot_info) {
     init_interrupts_x86();
 
@@ -54,24 +51,24 @@ void kmain(BiosBootInfo* boot_info) {
     
     terminal_print(&second_terminal, "Using VGA text mode \n");
     terminal_print(&second_terminal, ">PHYSICAL RAM STATS:\n");
-    terminal_print(&second_terminal, "- USABLE MEMORY: ~");
+    terminal_print(&second_terminal, "- USABLE MEMORY:   ~");
     terminal_printDEC(&second_terminal, sensei_mem->physical_stats.bytes_usable/(1024 * 1024));
     terminal_print(&second_terminal, "MB\n");
     terminal_print(&second_terminal, "- RESERVED MEMORY: ~");
     terminal_printDEC(&second_terminal, sensei_mem->physical_stats.bytes_reserved/1024);
     terminal_print(&second_terminal, "KB\n");
-    terminal_print(&second_terminal, "- BAD MEMORY: ~");
+    terminal_print(&second_terminal, "- BAD MEMORY:      ~");
     terminal_printDEC(&second_terminal, sensei_mem->physical_stats.bytes_bad_mem/1024);
     terminal_print(&second_terminal, "KB\n");
 
     terminal_print(&second_terminal, ">KERNEL MEM STATS:\n");
-    terminal_print(&second_terminal, "- HEAP CAPACITY: ~");
+    terminal_print(&second_terminal, "- HEAP CAPACITY:   ~");
     terminal_printDEC(&second_terminal, sensei_mem->kernel_info.heap_bytes_cap/(1024 * 1024));
     terminal_print(&second_terminal, "MB\n");
-    terminal_print(&second_terminal, "- HEAP FREE: ~");
+    terminal_print(&second_terminal, "- HEAP FREE:       ~");
     terminal_printDEC(&second_terminal, sensei_mem->kernel_info.heap_bytes_free/(1024 * 1024));
     terminal_print(&second_terminal, "MB\n");
-    terminal_print(&second_terminal, "- HEAP USED: ~");
+    terminal_print(&second_terminal, "- HEAP USED:       ~");
     terminal_printDEC(&second_terminal, sensei_mem->kernel_info.heap_bytes_used/(1024 * 1024));
     terminal_print(&second_terminal, "MB\n");
 

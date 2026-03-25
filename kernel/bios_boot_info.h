@@ -22,9 +22,18 @@ typedef struct {
     u32 acpi_ext;
 } BootMMapEntry;
 
-typedef struct {} Pml4Table;
-typedef struct {} PdptTable;
-typedef struct {} PdTable;
+typedef struct {
+    u64 entries[512];
+} Pml4Table;
+typedef struct {
+    u64 entries[512];
+} PdptTable;
+typedef struct {
+    u64 entries[512];
+} PdTable;
+typedef struct {
+    u64 entries[512];
+} PtTable;
 
 typedef struct {
     BootMMapEntry* boot_memmap_addr;
@@ -32,6 +41,7 @@ typedef struct {
     Pml4Table* pml4_table;
     PdptTable* pdpt_table;
     PdTable* pd_table;
+    PtTable* pt_table;
 } BiosBootInfo;
 
 #endif

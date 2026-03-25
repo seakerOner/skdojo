@@ -35,6 +35,9 @@ mov [rdi+24], rax
 
 mov rax, pd_table+0x10000
 mov [rdi+32], rax
+
+mov rax, pt_table+0x10000
+mov [rdi+40], rax
  
 mov rdi, 0x50000
 mov rax, 0x20000
@@ -48,7 +51,7 @@ set_paging:
     pusha
 
     mov edi, pml4_table
-    mov ecx, (4096 * 3)/4  
+    mov ecx, (4096 * 4)/4  
     xor eax, eax            ; fill with 0's
     rep stosd
 
@@ -62,10 +65,30 @@ set_paging:
     or eax, 0b11
     mov [pdpt_table], eax
 
-    ; PD -> 2MB identity map    (kernel is responsible to load more memory)
-    mov eax, 0x00000000         ; physical memory 0
-    or eax, 0b10000011          ; present + writable + huge page
+    ; ; PD -> 2MB identity map    (kernel is responsible to load more memory)
+    ; mov eax, 0x00000000         ; physical memory 0
+    ; or eax, 0b10000011          ; present + writable + huge page
+    ; mov [pd_table], eax
+
+    ; PD -> PT
+    mov eax, pt_table
+    or eax, 0b11 
     mov [pd_table], eax
+
+    mov ecx, 512
+    mov edi, pt_table 
+    mov eax, 0 
+
+    .fill_pt:
+    mov ebx, eax 
+    or ebx, 0b11                ; present + writable
+    mov [edi], ebx 
+
+    add eax, 0x1000             ; next page (4KB)
+    add edi, 8                  ; next entry
+    loop .fill_pt
+
+    ; VA 0x0 -> PA 0x0 (4KB granularity)
 
     ; enable PAE
     mov eax, cr4
@@ -101,5 +124,9 @@ set_paging:
 
     align 4096
     pd_table:
+    resb 4096
+
+    align 4096 
+    pt_table:
     resb 4096
 

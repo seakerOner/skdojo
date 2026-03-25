@@ -61,5 +61,5 @@ call rm_to_pm                       ; changes to protected mode and goes to 'jum
 %include "./bootloader/x86-64/rm_to_pm.asm"
 
 ; 4 sectors
-times ((512 * 33) + 510) - ($ - $$) db 0       ;  fill the rest of the boot sector with 0's
+times ((512 * 40) + 510) - ($ - $$) db 0       ;  fill the rest of the boot sector with 0's
 dw 0xAA55                       ;  last 2 bytes are the magic number signaling the end of the boot sector

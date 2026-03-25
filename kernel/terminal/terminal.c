@@ -1,5 +1,33 @@
 #include "terminal.h"
 
+#define PROMP_OFFSET 1
+
+void terminal_toggle_cursor(DojoTerminal* terminal) {
+    VideoSensei* sensei_v = get_video_sensei();
+
+    StyleColor inverted_color;
+    char c;
+
+    sensei_v->driver.read_cell(
+            terminal->window->framebuffer,
+            terminal->cursor_row,
+            terminal->cursor_col,
+            &c,
+            &inverted_color);
+
+    u32 temp = inverted_color.bg.value ;
+    inverted_color.bg.value = inverted_color.fg.value;
+    inverted_color.fg.value = temp;
+
+    sensei_v->driver.draw_cell(
+            terminal->window->framebuffer,
+            terminal->cursor_row,
+            terminal->cursor_col,
+            c,
+            inverted_color
+            );
+}
+
 DojoTerminal terminal_new(DojoWindow* window) {
     const DojoTheme* theme = dojo_get_theme();
     DojoTerminal term;
@@ -12,11 +40,22 @@ DojoTerminal terminal_new(DojoWindow* window) {
     // term.history.count          = 0;
     // term.history.line_len       = TERMINAL_BUFFER_LEN;
     term.input_buffer.cursor    = 0;
+    term.input_buffer.index     = 0;
     term.input_buffer.len       = TERMINAL_BUFFER_LEN;
 
+    for (u32 x = 0; x < term.input_buffer.len; x++) {
+        term.input_buffer.data[x] = ' ';                // fill buffer with spaces
+    }
+
     terminal_putc(&term, '>');
+
+    term.input_buffer.input_start_row = term.cursor_row;
+    term.input_buffer.input_start_col = term.cursor_col;
+
+    terminal_toggle_cursor(&term);
     return term;
 }
+
 
 void terminal_printDEC(DojoTerminal* terminal, u64 num) {
     char buffer[32] = {0};
@@ -34,7 +73,11 @@ void terminal_printDEC(DojoTerminal* terminal, u64 num) {
 
     while (x--) 
         terminal_putc(terminal, buffer[x]);
+
+    terminal->input_buffer.input_start_row = terminal->cursor_row;
+    terminal->input_buffer.input_start_col = terminal->cursor_col;
 }
+
 
 void terminal_putc(DojoTerminal *terminal, char c) {
     if (c == '\n') {
@@ -57,6 +100,9 @@ void terminal_putc(DojoTerminal *terminal, char c) {
                                 terminal->cursor_col, c, theme->palette.main_colors);
 
     terminal->cursor_col++;
+
+    terminal->input_buffer.input_start_row = terminal->cursor_row;
+    terminal->input_buffer.input_start_col = terminal->cursor_col;
 }
 
 void terminal_print(DojoTerminal* terminal, char* string) {
@@ -120,41 +166,175 @@ void terminal_scroll(DojoTerminal* terminal) {
     terminal->cursor_col = 0;
 }
 
+static void terminal_redraw_buffer(DojoTerminal* t) {
+    VideoSensei* sensei_v = get_video_sensei();
+    const DojoTheme* theme = dojo_get_theme();
+
+    u32 width = t->window->width;
+
+    for (u32 x = 0; x <= t->input_buffer.index; x++) {
+
+        u32 abs = t->input_buffer.input_start_col + x;
+
+        u32 row = t->input_buffer.input_start_row + (abs/width);
+        u32 col = abs % width;
+
+        while (row >= t->window->height) {
+            terminal_scroll(t);
+            t->input_buffer.input_start_row--;
+            row--;
+        }
+
+        char c = (x < t->input_buffer.index)
+            ? t->input_buffer.data[x]
+            : ' ';  // clean last char
+        
+        sensei_v->driver.draw_cell(
+                t->window->framebuffer,
+                row,
+                col,
+                c,
+                theme->palette.main_colors
+        );
+    }
+    u32 abs = t->input_buffer.input_start_col + t->input_buffer.cursor;
+
+    t->cursor_row = t->input_buffer.input_start_row + (abs / width);
+    t->cursor_col = abs % width;
+}
+
+static inline void terminal_addto_buffer(DojoTerminal* terminal, char c) {
+    if (terminal->input_buffer.index >= terminal->input_buffer.len) {
+        return;
+    }
+
+    // adding inside the buffer, we must offset the content of the buffer after the cursor
+    if (terminal->input_buffer.cursor < terminal->input_buffer.index) {
+        u32 to_shift = (terminal->input_buffer.index - terminal->input_buffer.cursor);
+        char* end    = &terminal->input_buffer.data[terminal->input_buffer.index - 1];
+
+        for (u32 x = 0; x < to_shift; x++) {
+            *(end+1) = *end;
+            end--;
+        }
+    } 
+    terminal->input_buffer.data[terminal->input_buffer.cursor++] = c;
+    terminal->input_buffer.index++;
+
+    terminal_redraw_buffer(terminal);
+}
+
 static inline void terminal_backspace(DojoTerminal* terminal) {
-    terminal->cursor_col--;
-    terminal_putc(terminal, ' ');
+    if (terminal->input_buffer.cursor == 0 || terminal->input_buffer.index == 0)
+        return;
+
+    terminal->input_buffer.cursor--;
+
+    for (u32 i = terminal->input_buffer.cursor; i < terminal->input_buffer.index - 1; i++) 
+        terminal->input_buffer.data[i] = terminal->input_buffer.data[i+1];
+
+    terminal->input_buffer.index--;
+
+    terminal_redraw_buffer(terminal);
+}
+
+static void terminal_cursor_move_back(DojoTerminal* terminal) {
+    if (terminal->input_buffer.cursor == 0)
+        return;
+
+    terminal->input_buffer.cursor--;
+
+    if (terminal->cursor_col == 0) {
+        terminal->cursor_row--;
+        terminal->cursor_col = terminal->window->width - 1;
+        return;
+    }
 
     terminal->cursor_col--;
 }
 
-void terminal_poll_events(DojoTerminal* terminal){
+static inline void terminal_cursor_move_front(DojoTerminal* terminal) {
+    if (terminal->input_buffer.cursor == terminal->input_buffer.index)
+        return;
+
+    terminal->input_buffer.cursor++;
+
+    if (terminal->cursor_col == terminal->window->width) {
+        terminal->cursor_row++;
+        terminal->cursor_col = 0;
+        return;
+    }
+
+    terminal->cursor_col++;
+
+}
+
+void terminal_poll(DojoTerminal* terminal){
 
     while(keyboard_has_events()) {
+
         KeyEvent ev;
         if (!keyboard_pop_event(&ev)) {
             continue;
         }
+
         if (ev.pressed && ev.key == KEY_1 && ev.shift && ev.super) {
             wmanager_focus(0);
             continue;
         }
         if (ev.pressed && ev.key == KEY_2 && ev.shift && ev.super) {
             wmanager_focus(1);
+            continue;
+        }
 
+
+        if (ev.pressed && ev.key == KEY_ARROW_LEFT) {
+            terminal_toggle_cursor(terminal);
+            terminal_cursor_move_back(terminal);
+            terminal_toggle_cursor(terminal);
+            continue;
+        }
+        if (ev.pressed && ev.key == KEY_ARROW_RIGHT) {
+            terminal_toggle_cursor(terminal);
+            terminal_cursor_move_front(terminal);
+            terminal_toggle_cursor(terminal);
             continue;
         }
 
         if (ev.pressed) {
-            if (ev.key == KEY_BACKSPACE) {
-                terminal_backspace(terminal);
+            terminal_toggle_cursor(terminal);
+
+            if (ev.key == KEY_ENTER) {
+                terminal_putc(terminal, ev.ascii);
+                // TODO: interpret the input buffer
+                u32 x= 0;
+                terminal_print(terminal, "BUFFER OUTPUT: ");
+                while (x < terminal->input_buffer.index) {
+                    terminal_putc(terminal, terminal->input_buffer.data[x]);
+                    x++;
+                }
+                terminal_putc(terminal, '\n');
+                // 
+
+                terminal->input_buffer.cursor = 0;
+                terminal->input_buffer.index  = 0;
+                terminal->input_buffer.input_start_row = terminal->cursor_row;
+                terminal->input_buffer.input_start_col = terminal->cursor_col;
+
+                terminal_putc(terminal, '>');
+                terminal_toggle_cursor(terminal);
                 continue;
             }
 
-            terminal_putc(terminal, ev.ascii);
-            if (ev.key == KEY_ENTER) {
-                terminal_putc(terminal, '>');
+            if (ev.key == KEY_BACKSPACE) {
+                terminal_backspace(terminal);
+                terminal_toggle_cursor(terminal);
+                continue;
             }
-        }
 
+            terminal_addto_buffer(terminal, ev.ascii);
+            terminal_toggle_cursor(terminal);
+        }
     }
+
 }

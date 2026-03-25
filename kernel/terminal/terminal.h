@@ -18,7 +18,11 @@ typedef struct {
 typedef struct {
     char data[TERMINAL_BUFFER_LEN];
     u32 len;
+    u32 index;
     u32 cursor;
+
+    u32 input_start_row;
+    u32 input_start_col;
 } TerminalInput;
 
 typedef struct {
@@ -43,7 +47,7 @@ void terminal_newline(DojoTerminal* terminal);
 void terminal_gotoline(DojoTerminal* terminal, const u32 line);
 void terminal_scroll(DojoTerminal* terminal);
 
-void terminal_poll_events(DojoTerminal* terminal);
+void terminal_poll(DojoTerminal* terminal);
 
 void terminal_render(DojoTerminal* terminal);
 

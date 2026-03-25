@@ -86,7 +86,7 @@ jmp 0x1000:0               ; bootloader stage 2
 dap_stage2:
 db 0x10 
 db 0 
-dw 34                         ; num of sectors (max 125, if more is needed more calls are made)
+dw 41                         ; num of sectors (max 125, if more is needed more calls are made)
 dw 0x0000                     ; offset
 dw 0x1000 
 dd 1                          
@@ -98,7 +98,7 @@ db 0
 dw 125                        ; num of sectors (max 125, if more is needed more calls are made)
 dw 0x0000                     ; offset
 dw 0x2000 
-dd 35                          ; sector ( sector 5 = end of stage 2 )
+dd 42                          ; sector ( sector 5 = end of stage 2 )
 dd 0
 
 times 510 - ($ - $$) db 0       ;  fill the rest of the boot sector with 0's

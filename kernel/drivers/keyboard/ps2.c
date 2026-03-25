@@ -1,7 +1,7 @@
 #include "./ps2.h"
 
 // 
-// PS/2 Scan Code US layout
+// PS/2 Scan Code Set 1 US layout
 //
 
 unsigned char ps2_scanmap[128] = 
@@ -37,6 +37,8 @@ unsigned char ps2_scanmap_shift[128] =
 };
 
 KeyCode ps2_keymap_table[128] = {
+    [0x01] = KEY_ESC,
+
     [0x02] = KEY_1,
     [0x03] = KEY_2,
     [0x04] = KEY_3,
@@ -74,6 +76,11 @@ KeyCode ps2_keymap_table[128] = {
     [0x2D] = KEY_X,
     [0x15] = KEY_Y,
     [0x2C] = KEY_Z,
+
+    [0x48] = KEY_ARROW_UP,
+    [0x50] = KEY_ARROW_DOWN,
+    [0x4D] = KEY_ARROW_RIGHT,
+    [0x4B] = KEY_ARROW_LEFT,
 
     [0x1C] = KEY_ENTER,
     [0x0E] = KEY_BACKSPACE,

@@ -94,11 +94,14 @@ wmanagersensei.o: ./kernel/video/wmanager_sensei.c
 keyboardsensei.o: ./kernel/keyboard/keyboard_sensei.c
 	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
 
+memorysensei.o: ./kernel/memory/memory_sensei.c
+	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
+
 #
 # Build kernel
 #
 
-KERNEL_OBJS = kernel.o interrupts.o k_interrupts.o vga.o vgadriver.o themes.o printk.o terminal.o videosensei.o wmanagersensei.o ps2keyboard.o keyboardsensei.o
+KERNEL_OBJS = kernel.o interrupts.o k_interrupts.o vga.o vgadriver.o themes.o printk.o terminal.o videosensei.o wmanagersensei.o ps2keyboard.o keyboardsensei.o memorysensei.o
 KERNEL_OBJS_BUILD = $(addprefix ./build/, $(KERNEL_OBJS))
 
 kernel.bin: $(KERNEL_OBJS)

@@ -47,7 +47,7 @@ typedef struct {
     u64 screen_height;
 } VideoSensei;
 
-void create_video_sensei(); 
+VideoSensei* create_video_sensei(); 
 
 VideoSensei* get_video_sensei();
 

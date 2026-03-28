@@ -16,4 +16,9 @@ typedef float                  f32;
 typedef double                 f64;
 typedef u64                 size_t;
 
+#define NULL (void *)0
+
+#define KB(n) (n * 1024)
+#define MB(n) (n * (1024 * 1024))
+
 #endif

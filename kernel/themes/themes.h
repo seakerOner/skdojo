@@ -39,7 +39,6 @@ typedef struct {
 } DojoTheme;
 
 void             dojo_set_theme(ThemesNames theme);
-void             dojo_clear_screen();
 const DojoTheme* dojo_get_theme();
 
 #endif

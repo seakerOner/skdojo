@@ -91,6 +91,9 @@ videosensei.o: ./kernel/video/video_sensei.c
 wmanagersensei.o: ./kernel/video/wmanager_sensei.c
 	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
 
+compositorsensei.o: ./kernel/video/compositor_sensei.c
+	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
+
 keyboardsensei.o: ./kernel/keyboard/keyboard_sensei.c
 	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
 
@@ -101,7 +104,7 @@ memorysensei.o: ./kernel/memory/memory_sensei.c
 # Build kernel
 #
 
-KERNEL_OBJS = kernel.o interrupts.o k_interrupts.o vga.o vgadriver.o themes.o printk.o terminal.o videosensei.o wmanagersensei.o ps2keyboard.o keyboardsensei.o memorysensei.o
+KERNEL_OBJS = kernel.o interrupts.o k_interrupts.o vga.o vgadriver.o themes.o printk.o terminal.o videosensei.o wmanagersensei.o ps2keyboard.o keyboardsensei.o memorysensei.o compositorsensei.o
 KERNEL_OBJS_BUILD = $(addprefix ./build/, $(KERNEL_OBJS))
 
 kernel.bin: $(KERNEL_OBJS)

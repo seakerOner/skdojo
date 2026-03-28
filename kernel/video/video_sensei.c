@@ -4,7 +4,7 @@
 
 VideoSensei video_sensei;
 
-void create_video_sensei() {
+VideoSensei* create_video_sensei() {
     // TODO: Check VGA support via PCI
     // hardcoded to VGA for now
 
@@ -24,6 +24,7 @@ void create_video_sensei() {
         while (1);
     }
 
+    return &video_sensei;
 }
 
 VideoSensei* get_video_sensei() {

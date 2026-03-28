@@ -20,11 +20,11 @@ i32 wmanager_create_window(u32 row, u32 col, u32 width, u32 height, VideoSensei*
     u32 id = wmanager_sensei.window_count++;
     DojoWindow* window = &wmanager_sensei.windows[id];
 
-    window->id        = id;
-    window->start_row = row;
-    window->start_col = col;
-    window->width     = width;
-    window->height    = height;
+    window->id              = id;
+    window->start_heigth    = row;
+    window->start_width     = col;
+    window->width           = width;
+    window->height          = height;
 
     sensei->driver.new_framebuffer(row, col, width, height, &window->fb_stub);
 
@@ -46,6 +46,11 @@ DojoWindow* wmanager_get_window(u32 id) {
 
 void wmanager_focus(u32 id) {
     wmanager_sensei.focused = id;
+}
+
+void dojo_clear_screen(DojoWindow* window) {
+    VideoSensei* sensei = get_video_sensei();
+    sensei->driver.clear(window->framebuffer, dojo_get_theme()->palette.main_colors);
 }
 
 // TODO:

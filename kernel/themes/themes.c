@@ -3,10 +3,6 @@
 
 DojoTheme dojo_theme;
 
-void dojo_clear_screen() {
-    VideoSensei* sensei = get_video_sensei();
-    sensei->driver.clear(wmanager_get_focused()->framebuffer, dojo_theme.palette.main_colors);
-}
 
 static inline void set_vga_theme() {
     dojo_theme.cursor = '_';

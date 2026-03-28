@@ -4,6 +4,7 @@
 #include "../video/video_sensei.h"
 #include "../video/wmanager_sensei.h"
 #include "../keyboard/keyboard_sensei.h"
+#include "../video/compositor_sensei.h"
 
 #define TERMINAL_MAX_HISTORY 500
 #define TERMINAL_BUFFER_LEN  256
@@ -26,7 +27,7 @@ typedef struct {
 } TerminalInput;
 
 typedef struct {
-    DojoWindow*     window;
+    CompWinFrame*       frame;
     // TODO: add terminal history when we have a memory model
     // TerminalHistory history;
     TerminalInput   input_buffer;
@@ -37,7 +38,7 @@ typedef struct {
     char cursor_char;      // from DojoTheme 
 } DojoTerminal;
 
-DojoTerminal terminal_new(DojoWindow* window);
+DojoTerminal terminal_new(CompWinFrame* frame);
 
 void terminal_print(DojoTerminal* terminal, char* string);
 void terminal_printDEC(DojoTerminal* terminal, u64 num);
@@ -47,7 +48,7 @@ void terminal_newline(DojoTerminal* terminal);
 void terminal_gotoline(DojoTerminal* terminal, const u32 line);
 void terminal_scroll(DojoTerminal* terminal);
 
-void terminal_poll(DojoTerminal* terminal);
+void terminal_poll(DojoTerminal* terminal, KeyEvent* ev);
 
 void terminal_render(DojoTerminal* terminal);
 

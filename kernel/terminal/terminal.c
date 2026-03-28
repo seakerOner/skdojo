@@ -8,19 +8,19 @@ void terminal_toggle_cursor(DojoTerminal* terminal) {
     StyleColor inverted_color;
     char c;
 
-    sensei_v->driver.read_cell(
-            terminal->window->framebuffer,
+    comp_read_cell(
+            terminal->frame,
             terminal->cursor_row,
             terminal->cursor_col,
             &c,
             &inverted_color);
 
-    u32 temp = inverted_color.bg.value ;
-    inverted_color.bg.value = inverted_color.fg.value;
-    inverted_color.fg.value = temp;
+    inverted_color.bg.value ^= inverted_color.fg.value;
+    inverted_color.fg.value = inverted_color.bg.value ^ inverted_color.fg.value;
+    inverted_color.bg.value ^= inverted_color.fg.value;
 
-    sensei_v->driver.draw_cell(
-            terminal->window->framebuffer,
+    comp_draw_cell(
+            terminal->frame,
             terminal->cursor_row,
             terminal->cursor_col,
             c,
@@ -28,11 +28,11 @@ void terminal_toggle_cursor(DojoTerminal* terminal) {
             );
 }
 
-DojoTerminal terminal_new(DojoWindow* window) {
+DojoTerminal terminal_new(CompWinFrame* frame) {
     const DojoTheme* theme = dojo_get_theme();
     DojoTerminal term;
 
-    term.window                 = window;
+    term.frame                  = frame;
     term.cursor_char            = theme->cursor;
     term.cursor_row             = 0;
     term.cursor_col             = 0;
@@ -42,6 +42,8 @@ DojoTerminal terminal_new(DojoWindow* window) {
     term.input_buffer.cursor    = 0;
     term.input_buffer.index     = 0;
     term.input_buffer.len       = TERMINAL_BUFFER_LEN;
+    term.input_buffer.input_start_row = frame->start_height;
+    term.input_buffer.input_start_col = frame->start_width;
 
     for (u32 x = 0; x < term.input_buffer.len; x++) {
         term.input_buffer.data[x] = ' ';                // fill buffer with spaces
@@ -86,17 +88,16 @@ void terminal_putc(DojoTerminal *terminal, char c) {
     } 
 
     // if reached end of collum
-    if (terminal->cursor_col >= terminal->window->width)
+    if (terminal->cursor_col >= terminal->frame->width)
         terminal_newline(terminal);
 
     // if reached last row
-    if (terminal->cursor_row >= terminal->window->height) 
+    if (terminal->cursor_row >= terminal->frame->height) 
         terminal_scroll(terminal);
 
-    VideoSensei* sensei_v   = get_video_sensei();
     const DojoTheme* theme = dojo_get_theme();
 
-    sensei_v->driver.draw_cell(terminal->window->framebuffer, terminal->cursor_row, 
+    comp_draw_cell(terminal->frame, terminal->cursor_row, 
                                 terminal->cursor_col, c, theme->palette.main_colors);
 
     terminal->cursor_col++;
@@ -116,7 +117,7 @@ void terminal_newline(DojoTerminal* terminal) {
 }
 
 void terminal_gotoline(DojoTerminal* terminal, const u32 line) {
-    if (line >= terminal->window->height) {
+    if (line >= terminal->frame->height) {
         terminal_scroll(terminal);
         return;
     }
@@ -125,24 +126,23 @@ void terminal_gotoline(DojoTerminal* terminal, const u32 line) {
 }
 
 void terminal_scroll(DojoTerminal* terminal) {
-    VideoSensei* sensei_v = get_video_sensei();
     const DojoTheme* theme = dojo_get_theme();
 
-    for (u32 r = 1; r < terminal->window->height; r++) {
-        for (u32 c = 0; c < terminal->window->width; c++) {
+    for (u32 r = 1; r < terminal->frame->height; r++) {
+        for (u32 c = 0; c < terminal->frame->width; c++) {
             char ch;
             StyleColor style;
 
-            sensei_v->driver.read_cell(
-                    terminal->window->framebuffer,
+            comp_read_cell(
+                    terminal->frame,
                     r,
                     c,
                     &ch,
                     &style
                     );
 
-            sensei_v->driver.draw_cell(
-                    terminal->window->framebuffer,
+            comp_draw_cell(
+                    terminal->frame,
                     r - 1,
                     c,
                     ch,
@@ -152,25 +152,24 @@ void terminal_scroll(DojoTerminal* terminal) {
     }
 
     // clear last line
-    for (u32 col = 0; col < terminal->window->width; col++) {
-        sensei_v->driver.draw_cell(
-                terminal->window->framebuffer,
-                terminal->window->height - 1,
+    for (u32 col = 0; col < terminal->frame->width; col++) {
+        comp_draw_cell(
+                terminal->frame,
+                terminal->frame->height - 1,
                 col,
                 ' ',
                 theme->palette.main_colors
                 );
     }
 
-    terminal->cursor_row = terminal->window->height - 1;
+    terminal->cursor_row = terminal->frame->height - 1;
     terminal->cursor_col = 0;
 }
 
 static void terminal_redraw_buffer(DojoTerminal* t) {
-    VideoSensei* sensei_v = get_video_sensei();
     const DojoTheme* theme = dojo_get_theme();
 
-    u32 width = t->window->width;
+    u32 width = t->frame->width;
 
     for (u32 x = 0; x <= t->input_buffer.index; x++) {
 
@@ -179,7 +178,7 @@ static void terminal_redraw_buffer(DojoTerminal* t) {
         u32 row = t->input_buffer.input_start_row + (abs/width);
         u32 col = abs % width;
 
-        while (row >= t->window->height) {
+        while (row >= t->frame->height) {
             terminal_scroll(t);
             t->input_buffer.input_start_row--;
             row--;
@@ -189,8 +188,8 @@ static void terminal_redraw_buffer(DojoTerminal* t) {
             ? t->input_buffer.data[x]
             : ' ';  // clean last char
         
-        sensei_v->driver.draw_cell(
-                t->window->framebuffer,
+        comp_draw_cell(
+                t->frame,
                 row,
                 col,
                 c,
@@ -246,7 +245,7 @@ static void terminal_cursor_move_back(DojoTerminal* terminal) {
 
     if (terminal->cursor_col == 0) {
         terminal->cursor_row--;
-        terminal->cursor_col = terminal->window->width - 1;
+        terminal->cursor_col = terminal->frame->width - 1;
         return;
     }
 
@@ -259,7 +258,7 @@ static inline void terminal_cursor_move_front(DojoTerminal* terminal) {
 
     terminal->input_buffer.cursor++;
 
-    if (terminal->cursor_col == terminal->window->width) {
+    if (terminal->cursor_col == terminal->frame->width) {
         terminal->cursor_row++;
         terminal->cursor_col = 0;
         return;
@@ -269,43 +268,25 @@ static inline void terminal_cursor_move_front(DojoTerminal* terminal) {
 
 }
 
-void terminal_poll(DojoTerminal* terminal){
-
-    while(keyboard_has_events()) {
-
-        KeyEvent ev;
-        if (!keyboard_pop_event(&ev)) {
-            continue;
-        }
-
-        if (ev.pressed && ev.key == KEY_1 && ev.shift && ev.super) {
-            wmanager_focus(0);
-            continue;
-        }
-        if (ev.pressed && ev.key == KEY_2 && ev.shift && ev.super) {
-            wmanager_focus(1);
-            continue;
-        }
-
-
-        if (ev.pressed && ev.key == KEY_ARROW_LEFT) {
+void terminal_poll(DojoTerminal* terminal, KeyEvent* ev){
+        if (ev->pressed && ev->key == KEY_ARROW_LEFT) {
             terminal_toggle_cursor(terminal);
             terminal_cursor_move_back(terminal);
             terminal_toggle_cursor(terminal);
-            continue;
+            return;
         }
-        if (ev.pressed && ev.key == KEY_ARROW_RIGHT) {
+        if (ev->pressed && ev->key == KEY_ARROW_RIGHT) {
             terminal_toggle_cursor(terminal);
             terminal_cursor_move_front(terminal);
             terminal_toggle_cursor(terminal);
-            continue;
+            return;
         }
 
-        if (ev.pressed) {
+        if (ev->pressed) {
             terminal_toggle_cursor(terminal);
 
-            if (ev.key == KEY_ENTER) {
-                terminal_putc(terminal, ev.ascii);
+            if (ev->key == KEY_ENTER) {
+                terminal_putc(terminal, ev->ascii);
                 // TODO: interpret the input buffer
                 u32 x= 0;
                 terminal_print(terminal, "BUFFER OUTPUT: ");
@@ -314,7 +295,6 @@ void terminal_poll(DojoTerminal* terminal){
                     x++;
                 }
                 terminal_putc(terminal, '\n');
-                // 
 
                 terminal->input_buffer.cursor = 0;
                 terminal->input_buffer.index  = 0;
@@ -323,18 +303,16 @@ void terminal_poll(DojoTerminal* terminal){
 
                 terminal_putc(terminal, '>');
                 terminal_toggle_cursor(terminal);
-                continue;
+                return;
             }
 
-            if (ev.key == KEY_BACKSPACE) {
+            if (ev->key == KEY_BACKSPACE) {
                 terminal_backspace(terminal);
                 terminal_toggle_cursor(terminal);
-                continue;
+                return;
             }
 
-            terminal_addto_buffer(terminal, ev.ascii);
+            terminal_addto_buffer(terminal, ev->ascii);
             terminal_toggle_cursor(terminal);
         }
-    }
-
 }

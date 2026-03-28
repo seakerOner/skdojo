@@ -15,9 +15,7 @@ void terminal_toggle_cursor(DojoTerminal* terminal) {
             &c,
             &inverted_color);
 
-    inverted_color.bg.value ^= inverted_color.fg.value;
-    inverted_color.fg.value = inverted_color.bg.value ^ inverted_color.fg.value;
-    inverted_color.bg.value ^= inverted_color.fg.value;
+    INVERT_COLOR(inverted_color)
 
     comp_draw_cell(
             terminal->frame,

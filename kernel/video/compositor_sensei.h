@@ -16,6 +16,8 @@ typedef struct {
 
     char hor_border_c;
     char ver_border_c;
+    char bot_border_c;
+    char corner_border_c;     
 } CompWinBorder;
 
 typedef struct {

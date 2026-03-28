@@ -4,6 +4,12 @@
 #include "../inttype.h"
 #include "../drivers/video/vga/vga_colors.h"
 
+#define INVERT_COLOR(color)                              \
+    color.bg.value ^= color.fg.value;                    \
+    color.fg.value = color.bg.value ^ color.fg.value;    \
+    color.bg.value ^= color.fg.value;                    \
+
+
 typedef struct {
     u32 value;
 } Color;

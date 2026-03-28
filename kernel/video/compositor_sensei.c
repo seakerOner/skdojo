@@ -18,8 +18,10 @@ CompositorSensei* create_compositor_sensei(DojoWindow* window) {
     for (u32 x = 0; x < MAX_WINDOWS; x++) {
         CompWinBorder* border = &compositor_sensei.win_border[x];
 
-        border->hor_border_c = '-';
-        border->ver_border_c = '|';
+        border->hor_border_c    = '-';
+        border->ver_border_c    = '|';
+        border->bot_border_c    = '_';
+        border->corner_border_c = '+';
 
         compositor_sensei.grid.curr_ids_in_col[x] = 0;
     }
@@ -93,6 +95,46 @@ void compositor_focus_frame(CompositorSensei* c_sensei, u32 frame_id) {
     }
 }
 
+static void comp_draw_borders(CompositorSensei* c_sensei) {
+    VideoDriver* driver = &get_video_sensei()->driver;
+    StyleColor colors     = dojo_get_theme()->palette.main_colors;
+
+    for (u32 f = 1; f <= c_sensei->frame_count; f++) {
+        CompWinBorder* border = &c_sensei->win_border[f];
+        CompWinFrame*  frame  = &c_sensei->win_frame[f];
+
+        for (u32 t = 0; t < border->width; t++) {
+            // top border
+            u32 on_corners = (t == 0) | (t + 1 == border->width);
+
+            driver->draw_cell(c_sensei->window->framebuffer, 
+                                border->start_height,
+                                border->start_width + t,
+                                on_corners ? border->corner_border_c : border->hor_border_c,
+                                colors);
+            // bottom border
+            driver->draw_cell(c_sensei->window->framebuffer,
+                                border->start_height + border->height -1,
+                                border->start_width + t,
+                                on_corners ? border->corner_border_c : border->bot_border_c,
+                                colors);
+        }
+        for (u32 x = 1; x < border->height; x++) {
+            // left border
+            driver->draw_cell(c_sensei->window->framebuffer,
+                                border->start_height + x,
+                                border->start_width,
+                                border->ver_border_c,
+                                colors);
+            driver->draw_cell(c_sensei->window->framebuffer,
+                                border->start_height + x,
+                                border->start_width + border->width - 1,
+                                border->ver_border_c,
+                                colors);
+        }
+    }
+}
+
 void comp_update_grid(CompositorSensei* c_sensei) {
     u32 base_height = c_sensei->window->height / c_sensei->grid.curr_max_rows ;
     u32 base_width  = c_sensei->window->width / c_sensei->grid.curr_max_cols ;
@@ -124,6 +166,9 @@ void comp_update_grid(CompositorSensei* c_sensei) {
         frame->width          = abs_width - 2;
         frame->height         = abs_height - 2;
     }
+
+    // draw all border after calculations
+    comp_draw_borders(c_sensei);
 }
 
 

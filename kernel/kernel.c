@@ -20,7 +20,7 @@ void kmain(BiosBootInfo* boot_info) {
 
     VideoSensei* sensei_v = create_video_sensei();
 
-    dojo_set_theme(THEME_UGLYDOJO);
+    dojo_set_theme(THEME_DARKMODE);
 
     create_wmanager_sensei();
     WManagerSensei* sensei_wmanager = get_wmanager_sensei();
@@ -90,8 +90,6 @@ void kmain(BiosBootInfo* boot_info) {
             //
             //u32 f_window_id = wmanager_get_focused()->id;
 
-            // compositor polls keyboard inputs but doesnt consume them and is polled before the frames. 
-            // making them global keyboard shortcuts 
             KeyEvent ev;
             if (!keyboard_pop_event(&ev)) {
                 continue;

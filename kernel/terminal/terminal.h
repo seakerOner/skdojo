@@ -13,6 +13,7 @@ typedef struct {
     char lines[TERMINAL_MAX_HISTORY][TERMINAL_BUFFER_LEN];
     u32 capacity;
     u32 count;
+    u32 scroll_offset;
     u32 line_len;
 } TerminalHistory;
 
@@ -38,7 +39,7 @@ typedef struct {
     char cursor_char;      // from DojoTheme 
 } DojoTerminal;
 
-DojoTerminal terminal_new(CompWinFrame* frame);
+void terminal_new(CompWinFrame* frame, DojoTerminal* t);
 
 void terminal_print(DojoTerminal* terminal, char* string);
 void terminal_printDEC(DojoTerminal* terminal, u64 num);
@@ -49,6 +50,7 @@ void terminal_gotoline(DojoTerminal* terminal, const u32 line);
 void terminal_scroll(DojoTerminal* terminal);
 
 void terminal_poll(DojoTerminal* terminal, KeyEvent* ev);
+void terminal_on_resize(void* app, u32 w, u32 h);
 
 void terminal_render(DojoTerminal* terminal);
 

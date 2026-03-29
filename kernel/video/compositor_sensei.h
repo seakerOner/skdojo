@@ -31,6 +31,10 @@ typedef struct {
     u32  start_height;
     u32  width;
     u32  height;
+
+    void* app;
+    void (*on_resize)(void* app, u32 new_w, u32 new_h);
+    // void (*on_render)(void* app);
 } CompWinFrame;
 
 typedef struct {

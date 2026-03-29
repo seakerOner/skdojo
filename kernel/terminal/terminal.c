@@ -26,34 +26,37 @@ void terminal_toggle_cursor(DojoTerminal* terminal) {
             );
 }
 
-DojoTerminal terminal_new(CompWinFrame* frame) {
+void terminal_new(CompWinFrame* frame, DojoTerminal* t) {
     const DojoTheme* theme = dojo_get_theme();
-    DojoTerminal term;
 
-    term.frame                  = frame;
-    term.cursor_char            = theme->cursor;
-    term.cursor_row             = 0;
-    term.cursor_col             = 0;
+    t->frame                  = frame;
+    t->frame->app             = t;
+    t->frame->on_resize       = (void *)terminal_on_resize;
+    t->cursor_char            = theme->cursor;
+    t->cursor_row             = 0;
+    t->cursor_col             = 0;
     // term.history.capacity       = TERMINAL_MAX_HISTORY;
     // term.history.count          = 0;
     // term.history.line_len       = TERMINAL_BUFFER_LEN;
-    term.input_buffer.cursor    = 0;
-    term.input_buffer.index     = 0;
-    term.input_buffer.len       = TERMINAL_BUFFER_LEN;
-    term.input_buffer.input_start_row = frame->start_height;
-    term.input_buffer.input_start_col = frame->start_width;
+    t->input_buffer.cursor    = 0;
+    t->input_buffer.index     = 0;
+    t->input_buffer.len       = TERMINAL_BUFFER_LEN;
+    // t->input_buffer.input_start_row = frame->start_height;
+    // t->input_buffer.input_start_row = frame->start_height;
+    t->input_buffer.input_start_col = 0;
+    t->input_buffer.input_start_col = 0;
 
-    for (u32 x = 0; x < term.input_buffer.len; x++) {
-        term.input_buffer.data[x] = ' ';                // fill buffer with spaces
+    for (u32 x = 0; x < t->input_buffer.len; x++) {
+        t->input_buffer.data[x] = ' ';                // fill buffer with spaces
     }
 
-    terminal_putc(&term, '>');
+    terminal_putc(t, '>');
 
-    term.input_buffer.input_start_row = term.cursor_row;
-    term.input_buffer.input_start_col = term.cursor_col;
+    t->input_buffer.input_start_row = t->cursor_row;
+    t->input_buffer.input_start_col = t->cursor_col;
 
-    terminal_toggle_cursor(&term);
-    return term;
+    terminal_toggle_cursor(t);
+    return;
 }
 
 
@@ -313,4 +316,38 @@ void terminal_poll(DojoTerminal* terminal, KeyEvent* ev){
             terminal_addto_buffer(terminal, ev->ascii);
             terminal_toggle_cursor(terminal);
         }
+}
+
+void terminal_on_resize(void* app, u32 w, u32 h) {
+    DojoTerminal* t = app;
+    // if (t->cursor_row >= h)
+    //     t->cursor_row = h - 1;
+    // if (t->cursor_col >= w)
+    //     t->cursor_col = w - 1;
+    
+    terminal_render(t);
+}
+
+void terminal_render(DojoTerminal* t) {
+    comp_clear(t->frame, dojo_get_theme()->palette.main_colors);
+
+    u32 row = 0;
+    // draw history
+    // for (u32 i = 0; i < t->history.line_count; i++) {
+    //     char* line = t->history.lines[i];
+    //
+    //     for (u32 c = 0; line[c]; c++) {
+    //         if (c >= t->frame->width) break;
+    //
+    //         comp_draw_cell(t->frame, row, c, c, dojo_get_theme()->palette.main_colors);
+    //     }
+    //
+    //     row++;
+    //     if (row >= t->frame->height) break;
+    // }
+    
+    // draw input buffer
+    terminal_redraw_buffer(t);
+
+    terminal_toggle_cursor(t);
 }

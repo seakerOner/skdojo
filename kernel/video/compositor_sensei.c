@@ -82,6 +82,7 @@ CompWinFrame* compositor_create_window_current_row(CompositorSensei* c_sensei) {
 
 
     comp_update_grid(c_sensei);
+    comp_clear(frame, dojo_get_theme()->palette.main_colors);
 
     // draw all border after calculations
     comp_draw_borders(c_sensei);
@@ -246,16 +247,17 @@ static void comp_draw_borders(CompositorSensei* c_sensei) {
 
 void comp_update_grid(CompositorSensei* c_sensei) {
     u32 base_height = c_sensei->window->height / c_sensei->grid.curr_max_rows;
+    u32 h_remainder = c_sensei->window->height % c_sensei->grid.curr_max_rows;
 
     for (u32 f = 1; f <= c_sensei->frame_count; f++) {
         CompGridNode* node = &c_sensei->nodes[f];
-        if (c_sensei->grid.curr_cols_in_row[node->row] ==0) continue;
+        if (c_sensei->grid.curr_cols_in_row[node->row] == 0) continue;
 
         u32 base_width  = c_sensei->window->width / c_sensei->grid.curr_cols_in_row[node->row];
+        u32 remainder   = c_sensei->window->width % c_sensei->grid.curr_cols_in_row[node->row];
 
         //
-        // cols
-        //
+        // TODO: use node resize offsets to make frames resizable
 
         u32 abs_id = (u32)c_sensei->grid.data[node->row][node->col][node->id];
 
@@ -264,6 +266,15 @@ void comp_update_grid(CompositorSensei* c_sensei) {
 
         u32 col_todraw     = base_width * node->col;
         u32 abs_width      = base_width;
+
+        if (node->col == c_sensei->grid.curr_cols_in_row[node->row] - 1) {
+            abs_width += remainder;
+            col_todraw = c_sensei->window->width - abs_width;
+        }
+        if (node->row == c_sensei->grid.curr_max_rows - 1) {
+            abs_height += h_remainder;
+            row_todraw  = c_sensei->window->height - abs_height; 
+        }
 
         CompWinBorder* border = &c_sensei->win_border[abs_id];
         border->start_width   = col_todraw;
@@ -274,14 +285,22 @@ void comp_update_grid(CompositorSensei* c_sensei) {
         CompWinFrame* frame   = &c_sensei->win_frame[abs_id];
         frame->start_width    = col_todraw + 1;
         frame->start_height   = row_todraw + 1;
-        frame->width          = abs_width - 2;
+        frame->width          = abs_width  - 2;
         frame->height         = abs_height - 2;
+
+        if (frame->on_resize)
+            frame->on_resize(frame->app, frame->width, frame->height);
+        else 
+            comp_clear(frame, dojo_get_theme()->palette.main_colors); // when no app is on window and to clear trash 
     }
 
 }
 
 
 u32 compositor_poll(CompositorSensei* c_sensei, KeyEvent* ev) {
+    //
+    // change focused frame
+    //
     if (ev->pressed && ev->key == KEY_1 && ev->shift && ev->super) {
         compositor_focus_frame(c_sensei, 1);
         return 1;
@@ -318,6 +337,18 @@ u32 compositor_poll(CompositorSensei* c_sensei, KeyEvent* ev) {
         compositor_focus_frame(c_sensei, 9);
         return 1;
     }
+    // 
+    // create new frames
+    //
+    if (ev->pressed && ev->key == KEY_ENTER && ev->shift && ev->super) {
+        compositor_create_window_current_row(c_sensei);
+        return 1;
+    }
+    if (ev->pressed && ev->key == KEY_N && ev->shift && ev->super) {
+        compositor_create_window_new_row(c_sensei);
+        return 1;
+    }
+
 
     return 0;
 }

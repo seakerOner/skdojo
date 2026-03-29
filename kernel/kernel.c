@@ -37,13 +37,17 @@ void kmain(BiosBootInfo* boot_info) {
 
     CompWinFrame* root_win_frame = compositor_create_window_current_row(comp_sensei);
     CompWinFrame* second_win_frame = compositor_create_window_current_row(comp_sensei);
-    // CompWinFrame* third_win_frame = compositor_create_window_new_row(comp_sensei);
+    // CompWinFrame* third_win_frame = compositor_create_window_current_row(comp_sensei);
+    // compositor_create_window_new_row(comp_sensei);
+
     
-    DojoTerminal root_terminal   = terminal_new(root_win_frame);
-    DojoTerminal second_terminal = terminal_new(second_win_frame);
+    DojoTerminal root_terminal = {0};
+    terminal_new(root_win_frame, &root_terminal);
+    DojoTerminal second_terminal = {0};
+    terminal_new(second_win_frame, &second_terminal);
     // DojoTerminal third_terminal = terminal_new(third_win_frame);
 
-    u32 root_t_comp_tag = root_terminal.frame->id;
+    u32 root_t_comp_tag          = root_terminal.frame->id;
     u32 scnd_t_comp_tag = second_terminal.frame->id;
     // u32 third_t_comp_tag = third_terminal.frame->id;
     

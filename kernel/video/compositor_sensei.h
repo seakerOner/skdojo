@@ -44,7 +44,7 @@ typedef struct {
 typedef struct {
     u32 curr_max_rows;
     u32 curr_cols_in_row[CS_GRID_ROWS];
-    u32 curr_ids_in_col[CS_GRID_COLS];
+    u32 curr_layers[CS_GRID_ROWS][CS_GRID_COLS];
     u32 data[CS_GRID_ROWS][CS_GRID_COLS][CS_GRID_LAYERS]; 
 } CompGrid; 
 
@@ -84,8 +84,5 @@ u32 compositor_poll(CompositorSensei* c_sensei, KeyEvent* ev);
 void comp_draw_cell(CompWinFrame* frame, u32 row, u32 col, char c, StyleColor style);
 void comp_read_cell(CompWinFrame* frame, u32 row, u32 col, char* out, StyleColor* style_out);
 void comp_clear    (CompWinFrame* frame, const StyleColor colors);
-
-
-//i32 wmanager_create_window(u32 row, u32 col, u32 width, u32 height, VideoSensei* sensei);
 
 #endif

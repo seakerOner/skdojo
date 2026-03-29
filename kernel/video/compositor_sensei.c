@@ -25,8 +25,13 @@ CompositorSensei* create_compositor_sensei(DojoWindow* window) {
         border->bot_l_corner_c  = 0xC0;
         border->bot_r_corner_c  = 0xD9;
 
-        compositor_sensei.grid.curr_ids_in_col[x] = 0;
         compositor_sensei.grid.curr_cols_in_row[x] = 0;
+    }
+
+    for (u32 r = 0; r < CS_GRID_ROWS; r++) {
+        for (u32 c = 0; c < CS_GRID_COLS; c++) {
+            compositor_sensei.grid.curr_layers[r][c] = 0;
+        }
     }
 
     return &compositor_sensei;
@@ -47,8 +52,10 @@ CompWinFrame* compositor_create_window_current_row(CompositorSensei* c_sensei) {
 
     comp_clean_borders(c_sensei);
 
-    c_sensei->grid.curr_cols_in_row[c_sensei->focused_node.row]++;
-    c_sensei->grid.curr_ids_in_col[c_sensei->focused_node.col]++;
+    u32 row = c_sensei->focused_node.row;
+    c_sensei->grid.curr_cols_in_row[row]++;
+    u32 col = c_sensei->grid.curr_cols_in_row[row] - 1;
+    u32 layer = c_sensei->grid.curr_layers[row][col]++;
     c_sensei->frame_count++;
 
     u32 frame_id = c_sensei->frame_count;
@@ -57,16 +64,16 @@ CompWinFrame* compositor_create_window_current_row(CompositorSensei* c_sensei) {
     frame->id             = frame_id;
     frame->parent_window  = c_sensei->window;
     
-    u32 grid_row = c_sensei->focused_node.row;
-    u32 grid_col = c_sensei->grid.curr_cols_in_row[c_sensei->focused_node.row] - 1;
-    u32 grid_seg = c_sensei->grid.curr_ids_in_col[c_sensei->focused_node.col] - 1;
+    u32 grid_row = row;
+    u32 grid_col = col;
+    u32 grid_seg = layer;
     c_sensei->focused_node.col_segment = grid_seg;
    
     CompGridNode* node = &c_sensei->nodes[frame_id];
 
-    node->id = c_sensei->grid.curr_ids_in_col[c_sensei->focused_node.col] - 1;
-    node->row                  = grid_row;
-    node->col                  = grid_col;
+    node->id                   = grid_seg;
+    node->row                  = row;
+    node->col                  = col;
     node->resize_offsets.down  = 0;
     node->resize_offsets.up    = 0;
     node->resize_offsets.left  = 0;
@@ -91,41 +98,39 @@ CompWinFrame* compositor_create_window_new_row(CompositorSensei* c_sensei) {
     comp_clean_borders(c_sensei);
 
     u32 new_row = c_sensei->grid.curr_max_rows++;
+    u32 col = 0;
 
     c_sensei->grid.curr_cols_in_row[new_row] = 0;  // ensure 0 init
     c_sensei->grid.curr_cols_in_row[new_row]++;
 
-
     c_sensei->frame_count++;
     u32 frame_id = c_sensei->frame_count;
 
-    c_sensei->grid.curr_ids_in_col[frame_id]++;
 
     CompWinFrame* frame = &c_sensei->win_frame[frame_id];
     frame->id = frame_id;
     frame->parent_window = c_sensei->window;
 
-    u32 grid_row = new_row;
-    u32 grid_col = 0;
-    u32 grid_seg = c_sensei->grid.curr_ids_in_col[frame_id] - 1;
+    u32 layer    = c_sensei->grid.curr_layers[new_row][col]++;
+    u32 grid_seg = layer;
 
-    c_sensei->focused_node.row         = grid_row;
-    c_sensei->focused_node.col         = grid_col;
-    c_sensei->focused_node.col_segment = grid_seg;
+    c_sensei->focused_node.row         = new_row;
+    c_sensei->focused_node.col         = col;
+    c_sensei->focused_node.col_segment = layer;
     c_sensei->focused_node.frame_id    = frame_id;
 
     CompGridNode* node = &c_sensei->nodes[frame_id];
 
-    node->id  = grid_seg;
-    node->row = grid_row;
-    node->col = grid_col;
+    node->id  = layer;
+    node->row = new_row;
+    node->col = col;
 
     node->resize_offsets.up     = 0;
     node->resize_offsets.down   = 0;
     node->resize_offsets.left   = 0;
     node->resize_offsets.right  = 0;
 
-    c_sensei->grid.data[grid_row][grid_col][grid_seg] = frame_id;
+    c_sensei->grid.data[new_row][col][grid_seg] = frame_id;
 
     comp_update_grid(c_sensei);
     comp_draw_borders(c_sensei);
@@ -240,11 +245,12 @@ static void comp_draw_borders(CompositorSensei* c_sensei) {
 }
 
 void comp_update_grid(CompositorSensei* c_sensei) {
+    u32 base_height = c_sensei->window->height / c_sensei->grid.curr_max_rows;
 
     for (u32 f = 1; f <= c_sensei->frame_count; f++) {
         CompGridNode* node = &c_sensei->nodes[f];
+        if (c_sensei->grid.curr_cols_in_row[node->row] ==0) continue;
 
-        u32 base_height = c_sensei->window->height / c_sensei->grid.curr_max_rows;
         u32 base_width  = c_sensei->window->width / c_sensei->grid.curr_cols_in_row[node->row];
 
         //

@@ -25,7 +25,6 @@ void kmain(BiosBootInfo* boot_info) {
     create_wmanager_sensei();
     WManagerSensei* sensei_wmanager = get_wmanager_sensei();
 
-
     i32 root_window_id = wmanager_create_window(0, 0, 
                                     sensei_v->screen_width, 
                                     sensei_v->screen_height, sensei_v);
@@ -38,12 +37,15 @@ void kmain(BiosBootInfo* boot_info) {
 
     CompWinFrame* root_win_frame = compositor_create_window_current_row(comp_sensei);
     CompWinFrame* second_win_frame = compositor_create_window_current_row(comp_sensei);
+    // CompWinFrame* third_win_frame = compositor_create_window_new_row(comp_sensei);
     
     DojoTerminal root_terminal   = terminal_new(root_win_frame);
     DojoTerminal second_terminal = terminal_new(second_win_frame);
+    // DojoTerminal third_terminal = terminal_new(third_win_frame);
 
     u32 root_t_comp_tag = root_terminal.frame->id;
     u32 scnd_t_comp_tag = second_terminal.frame->id;
+    // u32 third_t_comp_tag = third_terminal.frame->id;
     
     compositor_focus_frame(comp_sensei, root_t_comp_tag);
 
@@ -104,6 +106,8 @@ void kmain(BiosBootInfo* boot_info) {
                 terminal_poll(&root_terminal, &ev);
             if (scnd_t_comp_tag == focused_frame)
                 terminal_poll(&second_terminal, &ev);
+            // if (third_t_comp_tag == focused_frame)
+            //     terminal_poll(&third_terminal, &ev);
         }
     }
 }

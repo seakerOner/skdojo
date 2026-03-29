@@ -9,7 +9,6 @@ CompositorSensei* create_compositor_sensei(DojoWindow* window) {
     compositor_sensei.window = window;
     compositor_sensei.max_frames                = MAX_WINDOWS;
     compositor_sensei.focused_window            = &wmanager_get_focused()->id;
-    compositor_sensei.grid.curr_max_cols        = 0;
     compositor_sensei.grid.curr_max_rows        = 0;
     compositor_sensei.focused_node.row          = 0;
     compositor_sensei.focused_node.col          = 0;
@@ -18,30 +17,37 @@ CompositorSensei* create_compositor_sensei(DojoWindow* window) {
     for (u32 x = 0; x < MAX_WINDOWS; x++) {
         CompWinBorder* border = &compositor_sensei.win_border[x];
 
-        border->hor_border_c    = '-';
-        border->ver_border_c    = '|';
-        border->bot_border_c    = '_';
-        border->corner_border_c = '+';
+        border->hor_border_c    = 0xC4;
+        border->ver_border_c    = 0xB3; 
+        border->bot_border_c    = 0xC4;
+        border->top_l_corner_c  = 0xDA;
+        border->top_r_corner_c  = 0xBF;
+        border->bot_l_corner_c  = 0xC0;
+        border->bot_r_corner_c  = 0xD9;
 
         compositor_sensei.grid.curr_ids_in_col[x] = 0;
+        compositor_sensei.grid.curr_cols_in_row[x] = 0;
     }
-
 
     return &compositor_sensei;
 }
 
+static void comp_clean_borders(CompositorSensei* c_sensei); 
+static void comp_draw_borders(CompositorSensei* c_sensei);
+
 // returns NULL if window is not created
 CompWinFrame* compositor_create_window_current_row(CompositorSensei* c_sensei) {
-    if (c_sensei->grid.curr_max_cols >=  c_sensei->max_frames ||
-            c_sensei->grid.curr_max_rows >= c_sensei->max_frames)
+    if (c_sensei->grid.curr_cols_in_row[c_sensei->focused_node.row] >=  c_sensei->max_frames)
         return NULL;
     if (c_sensei->frame_count >= c_sensei->max_frames)
         return NULL;
 
-    if (!compositor_sensei.grid.curr_max_rows)
-        compositor_sensei.grid.curr_max_rows = 1;
+    if (!c_sensei->grid.curr_max_rows)
+        c_sensei->grid.curr_max_rows = 1;
 
-    c_sensei->grid.curr_max_cols++;
+    comp_clean_borders(c_sensei);
+
+    c_sensei->grid.curr_cols_in_row[c_sensei->focused_node.row]++;
     c_sensei->grid.curr_ids_in_col[c_sensei->focused_node.col]++;
     c_sensei->frame_count++;
 
@@ -51,18 +57,16 @@ CompWinFrame* compositor_create_window_current_row(CompositorSensei* c_sensei) {
     frame->id             = frame_id;
     frame->parent_window  = c_sensei->window;
     
-    // u32 grid_row = c_sensei->focused_node.row;
-    // u32 grid_col = c_sensei->focused_node.col;
-    u32 grid_row = c_sensei->grid.curr_max_rows - 1;
-    u32 grid_col = c_sensei->grid.curr_max_cols - 1;
+    u32 grid_row = c_sensei->focused_node.row;
+    u32 grid_col = c_sensei->grid.curr_cols_in_row[c_sensei->focused_node.row] - 1;
     u32 grid_seg = c_sensei->grid.curr_ids_in_col[c_sensei->focused_node.col] - 1;
     c_sensei->focused_node.col_segment = grid_seg;
    
     CompGridNode* node = &c_sensei->nodes[frame_id];
 
     node->id = c_sensei->grid.curr_ids_in_col[c_sensei->focused_node.col] - 1;
-    node->row = grid_row;
-    node->col = grid_col;
+    node->row                  = grid_row;
+    node->col                  = grid_col;
     node->resize_offsets.down  = 0;
     node->resize_offsets.up    = 0;
     node->resize_offsets.left  = 0;
@@ -72,25 +76,112 @@ CompWinFrame* compositor_create_window_current_row(CompositorSensei* c_sensei) {
 
     comp_update_grid(c_sensei);
 
+    // draw all border after calculations
+    comp_draw_borders(c_sensei);
+
     return frame;
 };
 
-CompWinFrame* compositor_create_window_new_row(CompositorSensei* c_sensei);
+CompWinFrame* compositor_create_window_new_row(CompositorSensei* c_sensei) {
+    if (c_sensei->grid.curr_max_rows >=  c_sensei->max_frames)
+        return NULL;
+    if (c_sensei->frame_count >= c_sensei->max_frames)
+        return NULL;
+
+    comp_clean_borders(c_sensei);
+
+    u32 new_row = c_sensei->grid.curr_max_rows++;
+
+    c_sensei->grid.curr_cols_in_row[new_row] = 0;  // ensure 0 init
+    c_sensei->grid.curr_cols_in_row[new_row]++;
+
+
+    c_sensei->frame_count++;
+    u32 frame_id = c_sensei->frame_count;
+
+    c_sensei->grid.curr_ids_in_col[frame_id]++;
+
+    CompWinFrame* frame = &c_sensei->win_frame[frame_id];
+    frame->id = frame_id;
+    frame->parent_window = c_sensei->window;
+
+    u32 grid_row = new_row;
+    u32 grid_col = 0;
+    u32 grid_seg = c_sensei->grid.curr_ids_in_col[frame_id] - 1;
+
+    c_sensei->focused_node.row         = grid_row;
+    c_sensei->focused_node.col         = grid_col;
+    c_sensei->focused_node.col_segment = grid_seg;
+    c_sensei->focused_node.frame_id    = frame_id;
+
+    CompGridNode* node = &c_sensei->nodes[frame_id];
+
+    node->id  = grid_seg;
+    node->row = grid_row;
+    node->col = grid_col;
+
+    node->resize_offsets.up     = 0;
+    node->resize_offsets.down   = 0;
+    node->resize_offsets.left   = 0;
+    node->resize_offsets.right  = 0;
+
+    c_sensei->grid.data[grid_row][grid_col][grid_seg] = frame_id;
+
+    comp_update_grid(c_sensei);
+    comp_draw_borders(c_sensei);
+
+    return frame;
+} ;
 
 void compositor_focus_frame(CompositorSensei* c_sensei, u32 frame_id) {
-    if (frame_id >= c_sensei->max_frames)
+    if (frame_id > c_sensei->frame_count || frame_id == 0)
         return;
 
+    CompGridNode* node = &c_sensei->nodes[frame_id];
+    FocusedNode* f_node = &c_sensei->focused_node;
 
-    for (u32 x = 1; x <= c_sensei->max_frames; x++) {
-        CompGridNode* node = &c_sensei->nodes[x];
-        if (node->id == frame_id) {
-            FocusedNode* f_node = &c_sensei->focused_node;
-            
-            f_node->frame_id    = frame_id;
-            f_node->row         = node->row;
-            f_node->col         = node->col;
-            f_node->col_segment = node->id;
+    f_node->frame_id    = frame_id;
+    f_node->row         = node->row;
+    f_node->col         = node->col;
+    f_node->col_segment = node->id;
+}
+
+static void comp_clean_borders(CompositorSensei* c_sensei) {
+    VideoDriver* driver = &get_video_sensei()->driver;
+    StyleColor colors     = dojo_get_theme()->palette.main_colors;
+
+    for (u32 f = 1; f <= c_sensei->frame_count; f++) {
+        CompWinBorder* border = &c_sensei->win_border[f];
+        CompWinFrame*  frame  = &c_sensei->win_frame[f];
+
+        for (u32 t = 0; t < border->width; t++) {
+            // top border
+            u32 on_corners = (t == 0) | (t + 1 == border->width);
+
+            driver->draw_cell(c_sensei->window->framebuffer, 
+                    border->start_height,
+                    border->start_width + t,
+                    ' ',
+                    colors);
+            // bottom border
+            driver->draw_cell(c_sensei->window->framebuffer,
+                    border->start_height + border->height -1,
+                    border->start_width + t,
+                    ' ',
+                    colors);
+        }
+        for (u32 x = 1; x < border->height; x++) {
+            // left border
+            driver->draw_cell(c_sensei->window->framebuffer,
+                    border->start_height + x,
+                    border->start_width,
+                    ' ',
+                    colors);
+            driver->draw_cell(c_sensei->window->framebuffer,
+                    border->start_height + x,
+                    border->start_width + border->width - 1,
+                    ' ',
+                    colors);
         }
     }
 }
@@ -104,22 +195,35 @@ static void comp_draw_borders(CompositorSensei* c_sensei) {
         CompWinFrame*  frame  = &c_sensei->win_frame[f];
 
         for (u32 t = 0; t < border->width; t++) {
-            // top border
-            u32 on_corners = (t == 0) | (t + 1 == border->width);
+            u32 on_left_cor = t == 0;
+            u32 on_right_cor =  t + 1 == border->width;
 
+            char top_char, bot_char;
+            if (on_left_cor) {
+                top_char = border->top_l_corner_c;
+                bot_char = border->bot_l_corner_c;
+            } else if (on_right_cor) {
+                top_char = border->top_r_corner_c;
+                bot_char = border->bot_r_corner_c;
+            } else {
+                top_char = border->hor_border_c;
+                bot_char = border->bot_border_c;
+            }
+
+            // top border
             driver->draw_cell(c_sensei->window->framebuffer, 
                                 border->start_height,
                                 border->start_width + t,
-                                on_corners ? border->corner_border_c : border->hor_border_c,
+                                top_char,
                                 colors);
             // bottom border
             driver->draw_cell(c_sensei->window->framebuffer,
                                 border->start_height + border->height -1,
                                 border->start_width + t,
-                                on_corners ? border->corner_border_c : border->bot_border_c,
+                                bot_char,
                                 colors);
         }
-        for (u32 x = 1; x < border->height; x++) {
+        for (u32 x = 1; x < border->height - 1; x++) {
             // left border
             driver->draw_cell(c_sensei->window->framebuffer,
                                 border->start_height + x,
@@ -136,18 +240,19 @@ static void comp_draw_borders(CompositorSensei* c_sensei) {
 }
 
 void comp_update_grid(CompositorSensei* c_sensei) {
-    u32 base_height = c_sensei->window->height / c_sensei->grid.curr_max_rows ;
-    u32 base_width  = c_sensei->window->width / c_sensei->grid.curr_max_cols ;
 
     for (u32 f = 1; f <= c_sensei->frame_count; f++) {
         CompGridNode* node = &c_sensei->nodes[f];
+
+        u32 base_height = c_sensei->window->height / c_sensei->grid.curr_max_rows;
+        u32 base_width  = c_sensei->window->width / c_sensei->grid.curr_cols_in_row[node->row];
+
         //
         // cols
         //
 
         u32 abs_id = (u32)c_sensei->grid.data[node->row][node->col][node->id];
 
- 
         u32 row_todraw     = base_height * node->row;
         u32 abs_height     = base_height;
 
@@ -167,8 +272,6 @@ void comp_update_grid(CompositorSensei* c_sensei) {
         frame->height         = abs_height - 2;
     }
 
-    // draw all border after calculations
-    comp_draw_borders(c_sensei);
 }
 
 

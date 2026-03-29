@@ -17,7 +17,11 @@ typedef struct {
     char hor_border_c;
     char ver_border_c;
     char bot_border_c;
-    char corner_border_c;     
+
+    char top_l_corner_c;     
+    char top_r_corner_c;     
+    char bot_r_corner_c;     
+    char bot_l_corner_c;     
 } CompWinBorder;
 
 typedef struct {
@@ -39,7 +43,7 @@ typedef struct {
 // will be used so each frame can have N layers (popup windows, notifications, menus, etc..)
 typedef struct {
     u32 curr_max_rows;
-    u32 curr_max_cols;
+    u32 curr_cols_in_row[CS_GRID_ROWS];
     u32 curr_ids_in_col[CS_GRID_COLS];
     u32 data[CS_GRID_ROWS][CS_GRID_COLS][CS_GRID_LAYERS]; 
 } CompGrid; 

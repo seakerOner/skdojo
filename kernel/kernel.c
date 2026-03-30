@@ -8,6 +8,7 @@
 #include "video/wmanager_sensei.h"
 #include "video/compositor_sensei.h"
 #include "memory/memory_sensei.h"
+#include "memory/kheap.h"
 
 #include "terminal/terminal.h"
 #include "printk/printk.h"
@@ -17,6 +18,7 @@ void kmain(BiosBootInfo* boot_info) {
     init_interrupts_x86();
 
     MemorySensei* sensei_mem = create_memory_sensei(boot_info);
+    start_kheap(sensei_mem); // default 14MB virtual memory
 
     VideoSensei* sensei_v = create_video_sensei();
 
@@ -78,6 +80,8 @@ void kmain(BiosBootInfo* boot_info) {
     terminal_print(&second_terminal, "- HEAP USED:       ~");
     terminal_printDEC(&second_terminal, sensei_mem->kernel_info.heap_bytes_used/MB(1));
     terminal_print(&second_terminal, "MB\n");
+    terminal_print(&second_terminal, "- PAGES HANGED:     ");
+    terminal_printDEC(&second_terminal, sensei_mem->kernel_info.heap_pages_hanged);
 
     terminal_print(&second_terminal, "\n>Senseis activated:\n"
             "- Memory Sensei\n"

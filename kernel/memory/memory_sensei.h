@@ -48,10 +48,30 @@ typedef struct {
 } MemoryPhyInfo;
 
 typedef struct {
+    u64 page_address;
+    struct {
+        u64 original_freed_address;
+        u64 pages_tried_tofree;
+    } backtrace;
+} FailedPages;
+
+typedef struct {
    u64 heap_bytes_cap;
    u64 heap_bytes_used;
    u64 heap_bytes_free;
+
+   u64 heap_pages_hanged;
+   FailedPages hanged_pages[KERNEL_HEAP_NUM_PAGES];
 } MemoryKernelInfo;
+
+// used when trying to double free a page in kernel heap
+#define HANG_PAGE(mem_sensei, hang_page_addr, caller_addr, tried_num_pages)                             \
+    do {                                                                                                \
+        u64 idx = mem_sensei->kernel_info.heap_pages_hanged++;                                          \
+        mem_sensei->kernel_info.hanged_pages[idx].page_address                     = hang_page_addr;    \
+        mem_sensei->kernel_info.hanged_pages[idx].backtrace.original_freed_address = caller_addr;       \
+        mem_sensei->kernel_info.hanged_pages[idx].backtrace.pages_tried_tofree     = tried_num_pages;   \
+    } while (0);                                                                                        \
 
 typedef struct {
     u64 pd_index;
@@ -67,5 +87,6 @@ typedef struct {
 }  MemorySensei;
 
 MemorySensei* create_memory_sensei(BiosBootInfo* boot_info);
+MemorySensei* get_mem_sensei();
 
 #endif

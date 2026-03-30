@@ -81,6 +81,9 @@ printk.o: ./kernel/printk/printk.c
 terminal.o: ./kernel/terminal/terminal.c
 	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
 
+kheap.o: ./kernel/memory/kheap.c
+	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
+
 #
 # SENSEIS
 #
@@ -104,7 +107,7 @@ memorysensei.o: ./kernel/memory/memory_sensei.c
 # Build kernel
 #
 
-KERNEL_OBJS = kernel.o interrupts.o k_interrupts.o vga.o vgadriver.o themes.o printk.o terminal.o videosensei.o wmanagersensei.o ps2keyboard.o keyboardsensei.o memorysensei.o compositorsensei.o
+KERNEL_OBJS = kernel.o interrupts.o k_interrupts.o vga.o vgadriver.o themes.o printk.o terminal.o videosensei.o wmanagersensei.o ps2keyboard.o keyboardsensei.o memorysensei.o compositorsensei.o kheap.o
 KERNEL_OBJS_BUILD = $(addprefix ./build/, $(KERNEL_OBJS))
 
 kernel.bin: $(KERNEL_OBJS)

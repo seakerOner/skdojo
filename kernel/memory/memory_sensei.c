@@ -111,3 +111,7 @@ MemorySensei* create_memory_sensei(BiosBootInfo* boot_info) {
     __asm__ __volatile__ ("mov %%cr3, %%rax; mov %%rax, %%cr3" ::: "rax", "memory");
     return &memory_sensei;
 }
+
+MemorySensei* get_mem_sensei() {
+    return &memory_sensei;
+}

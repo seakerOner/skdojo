@@ -41,9 +41,7 @@ void terminal_new(CompWinFrame* frame, DojoTerminal* t) {
     t->input_buffer.cursor    = 0;
     t->input_buffer.index     = 0;
     t->input_buffer.len       = TERMINAL_BUFFER_LEN;
-    // t->input_buffer.input_start_row = frame->start_height;
-    // t->input_buffer.input_start_row = frame->start_height;
-    t->input_buffer.input_start_col = 0;
+    t->input_buffer.input_start_row = 0;
     t->input_buffer.input_start_col = 0;
 
     for (u32 x = 0; x < t->input_buffer.len; x++) {

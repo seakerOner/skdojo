@@ -50,20 +50,20 @@ bits 32
 set_paging:
     pusha
 
-    mov edi, pml4_table
+    mov edi, pml4_table+0x10000
     mov ecx, (4096 * 4)/4  
     xor eax, eax            ; fill with 0's
     rep stosd
 
     ; PML4 -> PDPT
-    mov eax, pdpt_table 
+    mov eax, pdpt_table+0x10000
     or eax, 0b11                ; present + writable
-    mov [pml4_table], eax
+    mov [pml4_table+0x10000], eax
 
     ; PDPT -> PD
-    mov eax, pd_table
+    mov eax, pd_table+0x10000
     or eax, 0b11
-    mov [pdpt_table], eax
+    mov [pdpt_table+0x10000], eax
 
     ; ; PD -> 2MB identity map    (kernel is responsible to load more memory)
     ; mov eax, 0x00000000         ; physical memory 0
@@ -71,12 +71,12 @@ set_paging:
     ; mov [pd_table], eax
 
     ; PD -> PT
-    mov eax, pt_table
+    mov eax, pt_table+0x10000
     or eax, 0b11 
-    mov [pd_table], eax
+    mov [pd_table+0x10000], eax
 
     mov ecx, 512
-    mov edi, pt_table 
+    mov edi, pt_table+0x10000
     mov eax, 0 
 
     .fill_pt:
@@ -96,7 +96,7 @@ set_paging:
     mov cr4, eax
 
     ; load PML4
-    mov eax, pml4_table
+    mov eax, pml4_table+0x10000
     mov cr3, eax
 
     ; activate long mode (MSR)

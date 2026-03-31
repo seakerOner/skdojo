@@ -26,18 +26,29 @@ void terminal_toggle_cursor(DojoTerminal* terminal) {
             );
 }
 
-void terminal_new(CompWinFrame* frame, DojoTerminal* t) {
+static void terminal_history_add_c(TerminalHistory* h, char c) {
+    u32 abs_idx = h->c_count++ % (h->line_len * h->line_capacity);
+    h->data[abs_idx] = c;
+}
+
+int terminal_new(CompWinFrame* frame, DojoTerminal* t) {
     const DojoTheme* theme = dojo_get_theme();
 
+    t->history.line_capacity       = TERMINAL_MAX_HISTORY;
+    t->history.c_count          = 0;
+    t->history.line_len       = TERMINAL_BUFFER_LEN;
+    // TODO: use heap space not from the kernel heap itself
+    t->history.data           = (char*)kheap_reserve(
+                                CEIL_PAGES(t->history.line_capacity * t->history.line_len, 
+                                            KB(4)));
+    if (!t->history.data)
+        return -1;
     t->frame                  = frame;
     t->frame->app             = t;
     t->frame->on_resize       = (void *)terminal_on_resize;
     t->cursor_char            = theme->cursor;
     t->cursor_row             = 0;
     t->cursor_col             = 0;
-    // term.history.capacity       = TERMINAL_MAX_HISTORY;
-    // term.history.count          = 0;
-    // term.history.line_len       = TERMINAL_BUFFER_LEN;
     t->input_buffer.cursor    = 0;
     t->input_buffer.index     = 0;
     t->input_buffer.len       = TERMINAL_BUFFER_LEN;
@@ -54,7 +65,7 @@ void terminal_new(CompWinFrame* frame, DojoTerminal* t) {
     t->input_buffer.input_start_col = t->cursor_col;
 
     terminal_toggle_cursor(t);
-    return;
+    return 1;
 }
 
 
@@ -83,6 +94,7 @@ void terminal_printDEC(DojoTerminal* terminal, u64 num) {
 void terminal_putc(DojoTerminal *terminal, char c) {
     if (c == '\n') {
         terminal_newline(terminal);
+         terminal_history_add_c(&terminal->history, c);
         return;
     } 
 
@@ -96,6 +108,7 @@ void terminal_putc(DojoTerminal *terminal, char c) {
 
     const DojoTheme* theme = dojo_get_theme();
 
+     terminal_history_add_c(&terminal->history, c);
     comp_draw_cell(terminal->frame, terminal->cursor_row, 
                                 terminal->cursor_col, c, theme->palette.main_colors);
 
@@ -326,23 +339,73 @@ void terminal_on_resize(void* app, u32 w, u32 h) {
     terminal_render(t);
 }
 
+static inline u32 _terminal_get_history_start(DojoTerminal* t) {
+    u32 max     = t->history.line_capacity * t->history.line_len;
+    u32 count   = t->history.c_count;
+    u32 row     = 0;
+    u32 col     = 0;
+
+    if (count == 0)
+        return 0;
+
+    u32 x = count;
+    
+    while (x > 0) {
+        x--;
+
+        char c = t->history.data[x % max];
+
+        if (c == '\n') {
+            row++;
+            col = 0;
+        } else {
+            col++;
+            if (col >= t->frame->width) {
+                col = 0;
+                row++;
+            }
+        }
+
+        if (row >= t->frame->height)
+            break;
+    }
+
+    return x;
+}
+
 void terminal_render(DojoTerminal* t) {
     comp_clear(t->frame, dojo_get_theme()->palette.main_colors);
 
-    u32 row = 0;
+    StyleColor colors = dojo_get_theme()->palette.main_colors;
+    u32 row   = 0;
+    u32 col   = 0;
+    u32 max   = t->history.line_capacity * t->history.line_len;
+
+    u32 start = _terminal_get_history_start(t);
+
     // draw history
-    // for (u32 i = 0; i < t->history.line_count; i++) {
-    //     char* line = t->history.lines[i];
-    //
-    //     for (u32 c = 0; line[c]; c++) {
-    //         if (c >= t->frame->width) break;
-    //
-    //         comp_draw_cell(t->frame, row, c, c, dojo_get_theme()->palette.main_colors);
-    //     }
-    //
-    //     row++;
-    //     if (row >= t->frame->height) break;
-    // }
+    for (u32 i = start; i < t->history.c_count; i++) {
+        u32 idx = i % max;
+        char c  = t->history.data[idx];
+
+        if (c == '\n') {
+            row++;
+            col = 0;
+        } else {
+            comp_draw_cell(t->frame, row, col, c, colors);
+            col++;
+
+            if (col >= t->frame->width) {
+                col = 0;
+                row++;
+            }
+        }
+
+        if (row >= t->frame->height)
+            break;
+    }
+    t->input_buffer.input_start_row = row;
+    t->input_buffer.input_start_col = col;
     
     // draw input buffer
     terminal_redraw_buffer(t);

@@ -70,6 +70,7 @@ MemorySensei* create_memory_sensei(BiosBootInfo* boot_info) {
 
         u64 phys = memsensei->kpages[x];
         u64 virt = KERNEL_HEAP_START + (x * PAGE_SIZE);
+
         free_kernel_memory += PAGE_SIZE;
 
         u64 pt_page_i   = (virt - KERNEL_HEAP_START) / PAGE_SIZE;
@@ -101,6 +102,7 @@ MemorySensei* create_memory_sensei(BiosBootInfo* boot_info) {
         memsensei->pd_index++;
     }
     memory_sensei.kernel_info.heap_bytes_free = free_kernel_memory;
+    memory_sensei.kernel_info.heap_bytes_cap  = free_kernel_memory;
                                
     // reload CR3 register to maintain TBL (Translation Lookaside Buffer) 
     // coherence (in x86 architecture TLB coherence is not guaranteed when modifying table entries)

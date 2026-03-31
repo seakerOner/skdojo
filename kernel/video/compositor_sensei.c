@@ -42,9 +42,9 @@ static void comp_draw_borders(CompositorSensei* c_sensei);
 
 // returns NULL if window is not created
 CompWinFrame* compositor_create_window_current_row(CompositorSensei* c_sensei) {
-    if (c_sensei->grid.curr_cols_in_row[c_sensei->focused_node.row] >=  c_sensei->max_frames)
+    if (c_sensei->frame_count >= c_sensei->max_frames-1)
         return NULL;
-    if (c_sensei->frame_count >= c_sensei->max_frames)
+    if (c_sensei->grid.curr_cols_in_row[c_sensei->focused_node.row] >= CS_GRID_COLS)
         return NULL;
 
     if (!c_sensei->grid.curr_max_rows)
@@ -91,9 +91,9 @@ CompWinFrame* compositor_create_window_current_row(CompositorSensei* c_sensei) {
 };
 
 CompWinFrame* compositor_create_window_new_row(CompositorSensei* c_sensei) {
-    if (c_sensei->grid.curr_max_rows >=  c_sensei->max_frames)
+    if (c_sensei->frame_count >= c_sensei->max_frames-1)
         return NULL;
-    if (c_sensei->frame_count >= c_sensei->max_frames)
+    if (c_sensei->grid.curr_max_rows >= CS_GRID_ROWS)
         return NULL;
 
     comp_clean_borders(c_sensei);

@@ -17,6 +17,7 @@
 void kmain(BiosBootInfo* boot_info) {
     init_interrupts_x86();
 
+
     MemorySensei* sensei_mem = create_memory_sensei(boot_info);
     start_kheap(sensei_mem); // default 14MB virtual memory
 
@@ -78,8 +79,8 @@ void kmain(BiosBootInfo* boot_info) {
     terminal_printDEC(&second_terminal, sensei_mem->kernel_info.heap_bytes_free/MB(1));
     terminal_print(&second_terminal, "MB\n");
     terminal_print(&second_terminal, "- HEAP USED:       ~");
-    terminal_printDEC(&second_terminal, sensei_mem->kernel_info.heap_bytes_used/MB(1));
-    terminal_print(&second_terminal, "MB\n");
+    terminal_printDEC(&second_terminal, sensei_mem->kernel_info.heap_bytes_used/KB(1));
+    terminal_print(&second_terminal, "KB\n");
     terminal_print(&second_terminal, "- PAGES HANGED:     ");
     terminal_printDEC(&second_terminal, sensei_mem->kernel_info.heap_pages_hanged);
 

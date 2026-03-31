@@ -36,7 +36,7 @@ static int _find_free_pages(u64 num_pages) {
 
 void start_kheap(MemorySensei* mem_sensei) {
     k_heap.base      = (u8*)KERNEL_HEAP_START;     // virtual memory address
-    k_heap.capacity  = KERNEL_HEAP_NUM_PAGES;
+    k_heap.capacity  = mem_sensei->internal.kpage_index;
     k_heap.page_size = KB(4);
     k_heap.index     = 0;
 

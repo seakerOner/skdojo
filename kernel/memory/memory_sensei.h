@@ -14,7 +14,8 @@
 #define PAGE_SIZE   (4 * 1024)
 #define PAGE_ENTRIES 512        
 
-#define KERNEL_HEAP_START 0x200000                   // 2MB (virtual address)
+//#define KERNEL_HEAP_START 0x200000                 // 2MB (virtual address)
+#define KERNEL_HEAP_START   0x200000                 // 2MB (virtual address)
 #define KERNEL_HEAP_LEN  (0x01000000 - 0x00200000)   // bytes (14MB)
 
 #define KERNEL_HEAP_NUM_PAGES (KERNEL_HEAP_LEN / PAGE_SIZE)

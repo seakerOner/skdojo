@@ -5,16 +5,17 @@
 #include "../video/wmanager_sensei.h"
 #include "../keyboard/keyboard_sensei.h"
 #include "../video/compositor_sensei.h"
+#include "../memory/kheap.h"
 
-#define TERMINAL_MAX_HISTORY 500
+#define TERMINAL_MAX_HISTORY 512
 #define TERMINAL_BUFFER_LEN  256
 
 typedef struct {
-    char lines[TERMINAL_MAX_HISTORY][TERMINAL_BUFFER_LEN];
-    u32 capacity;
-    u32 count;
-    u32 scroll_offset;
+    char* data;
+    u32 c_count;
+    u32 line_capacity;
     u32 line_len;
+    u32 scroll_offset;
 } TerminalHistory;
 
 typedef struct {
@@ -29,8 +30,7 @@ typedef struct {
 
 typedef struct {
     CompWinFrame*       frame;
-    // TODO: add terminal history when we have a memory model
-    // TerminalHistory history;
+    TerminalHistory history;
     TerminalInput   input_buffer;
 
     u32 cursor_row;         // both for graphic display
@@ -39,7 +39,7 @@ typedef struct {
     char cursor_char;      // from DojoTheme 
 } DojoTerminal;
 
-void terminal_new(CompWinFrame* frame, DojoTerminal* t);
+int  terminal_new(CompWinFrame* frame, DojoTerminal* t);
 
 void terminal_print(DojoTerminal* terminal, char* string);
 void terminal_printDEC(DojoTerminal* terminal, u64 num);

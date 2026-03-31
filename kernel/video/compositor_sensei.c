@@ -40,6 +40,48 @@ CompositorSensei* create_compositor_sensei(DojoWindow* window) {
 static void comp_clean_borders(CompositorSensei* c_sensei); 
 static void comp_draw_borders(CompositorSensei* c_sensei);
 
+static inline void _shift_curr_cols_right(CompositorSensei* c_sensei, u32 insert_col) {
+    u32 row  = c_sensei->focused_node.row;
+    u32 cols = c_sensei->grid.curr_cols_in_row[row];
+
+    for (u32 c = cols; c > insert_col; c--) {
+        for (u32 l = 0; l < c_sensei->grid.curr_layers[row][c-1]; l++) {
+            u32 frame_id = c_sensei->grid.data[row][c-1][l];
+
+            // shift to the node on the right
+            c_sensei->grid.data[row][c][l] = frame_id;
+
+            c_sensei->nodes[frame_id].col = c;
+        }
+
+        c_sensei->grid.curr_layers[row][c] = 
+            c_sensei->grid.curr_layers[row][c-1];
+    }
+
+    c_sensei->grid.curr_layers[row][insert_col] = 0;
+    comp_update_grid(c_sensei);
+}
+
+static inline void _shift_rows_after_focds_row(CompositorSensei* c_sensei, u32 insert_row) {
+
+    for (u32 r = c_sensei->grid.curr_max_rows; r > insert_row; r--) {
+        for (u32 c = 0; c < c_sensei->grid.curr_cols_in_row[r-1]; c++) {
+            for (u32 l = 0; l < c_sensei->grid.curr_layers[r-1][c]; l++) {
+                u32 frame_id = c_sensei->grid.data[r-1][c][l];
+
+                c_sensei->grid.data[r][c][l] = frame_id;
+                c_sensei->nodes[frame_id].row = r;
+            }
+
+            c_sensei->grid.curr_layers[r][c] = c_sensei->grid.curr_layers[r-1][c];
+        }
+
+        c_sensei->grid.curr_cols_in_row[r] = c_sensei->grid.curr_cols_in_row[r-1];
+    }
+
+    comp_update_grid(c_sensei);
+}
+
 // returns NULL if window is not created
 CompWinFrame* compositor_create_window_current_row(CompositorSensei* c_sensei) {
     if (c_sensei->frame_count >= c_sensei->max_frames-1)
@@ -50,11 +92,14 @@ CompWinFrame* compositor_create_window_current_row(CompositorSensei* c_sensei) {
     if (!c_sensei->grid.curr_max_rows)
         c_sensei->grid.curr_max_rows = 1;
 
-    comp_clean_borders(c_sensei);
-
     u32 row = c_sensei->focused_node.row;
+    u32 cols = c_sensei->grid.curr_cols_in_row[row];
+    u32 col = (cols == 0) ? 0 : c_sensei->focused_node.col+1;
+
+    if (col < cols)
+        _shift_curr_cols_right(c_sensei, col);
+
     c_sensei->grid.curr_cols_in_row[row]++;
-    u32 col = c_sensei->grid.curr_cols_in_row[row] - 1;
     u32 layer = c_sensei->grid.curr_layers[row][col]++;
     c_sensei->frame_count++;
 
@@ -82,6 +127,7 @@ CompWinFrame* compositor_create_window_current_row(CompositorSensei* c_sensei) {
 
     compositor_focus_frame(c_sensei, frame_id);
 
+    comp_clean_borders(c_sensei);
     comp_update_grid(c_sensei);
     comp_clear(frame, dojo_get_theme()->palette.main_colors);
 
@@ -99,8 +145,14 @@ CompWinFrame* compositor_create_window_new_row(CompositorSensei* c_sensei) {
 
     comp_clean_borders(c_sensei);
 
-    u32 new_row = c_sensei->grid.curr_max_rows++;
+    // u32 new_row = c_sensei->grid.curr_max_rows++;
+    u32 new_row = c_sensei->focused_node.row+1;
     u32 col = 0;
+
+    if (new_row < c_sensei->grid.curr_max_rows)
+        _shift_rows_after_focds_row(c_sensei, new_row);
+
+    c_sensei->grid.curr_max_rows++;
 
     c_sensei->grid.curr_cols_in_row[new_row] = 0;  // ensure 0 init
     c_sensei->grid.curr_cols_in_row[new_row]++;

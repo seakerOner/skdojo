@@ -43,7 +43,7 @@ void kmain(BiosBootInfo* boot_info) {
     // CompWinFrame* third_win_frame = compositor_create_window_current_row(comp_sensei);
     // compositor_create_window_new_row(comp_sensei);
 
-    
+
     DojoTerminal root_terminal = {0};
     terminal_new(root_win_frame, &root_terminal);
     DojoTerminal second_terminal = {0};
@@ -52,9 +52,8 @@ void kmain(BiosBootInfo* boot_info) {
 
     u32 root_t_comp_tag          = root_terminal.frame->id;
     u32 scnd_t_comp_tag = second_terminal.frame->id;
-    // u32 third_t_comp_tag = third_terminal.frame->id;
-    
     compositor_focus_frame(comp_sensei, root_t_comp_tag);
+    // u32 third_t_comp_tag = third_terminal.frame->id;
 
     terminal_print(&root_terminal, "Welcome to the Dojo!\nContact: seakerone@proton.me\n\n");
     terminal_putc(&root_terminal, '>');

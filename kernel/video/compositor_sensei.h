@@ -82,6 +82,11 @@ void comp_update_grid(CompositorSensei* c_sensei);
 
 void compositor_focus_frame(CompositorSensei* c_sensei, u32 frame_id);
 
+void compositor_focus_up(CompositorSensei* c_sensei);
+void compositor_focus_down(CompositorSensei* c_sensei);
+void compositor_focus_left(CompositorSensei* c_sensei);
+void compositor_focus_right(CompositorSensei* c_sensei);
+
 // 1 -> polled | 0 ->ignored
 u32 compositor_poll(CompositorSensei* c_sensei, KeyEvent* ev);
 

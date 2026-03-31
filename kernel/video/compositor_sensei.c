@@ -356,47 +356,98 @@ void comp_update_grid(CompositorSensei* c_sensei) {
 
 }
 
+void compositor_focus_up(CompositorSensei* c_sensei) {
+    FocusedNode* fn = &c_sensei->focused_node;
+
+    if (fn->row == 0)
+        return;
+
+    u32 target_col = (c_sensei->grid.curr_cols_in_row[fn->row-1] <= fn->col) ? 
+                    c_sensei->grid.curr_cols_in_row[fn->row-1] - 1 : fn->col ;
+
+    // layer 0 is assumed to be the main app layer
+    u32 frame_id = c_sensei->grid.data[fn->row-1][target_col][0];
+
+    compositor_focus_frame(c_sensei, frame_id);
+}
+void compositor_focus_down(CompositorSensei* c_sensei) {
+    FocusedNode* fn = &c_sensei->focused_node;
+
+    if (fn->row+1 >= c_sensei->grid.curr_max_rows)
+        return;
+    if (c_sensei->grid.curr_cols_in_row[fn->row+1] == 0)
+        return;
+
+    u32 target_col = (c_sensei->grid.curr_cols_in_row[fn->row+1] <= fn->col) ? 
+                    c_sensei->grid.curr_cols_in_row[fn->row+1] - 1 : fn->col ;
+
+    // layer 0 is assumed to be the main app layer
+    u32 frame_id = c_sensei->grid.data[fn->row+1][target_col][0];
+    compositor_focus_frame(c_sensei, frame_id);
+}
+void compositor_focus_left(CompositorSensei* c_sensei) {
+    FocusedNode* fn = &c_sensei->focused_node;
+
+    if (fn->col == 0)
+        return;
+
+    u32 target_col = fn->col - 1;
+
+    u32 frame_id = c_sensei->grid.data[fn->row][target_col][0];
+    compositor_focus_frame(c_sensei, frame_id);
+}
+void compositor_focus_right(CompositorSensei* c_sensei) {
+    FocusedNode* fn = &c_sensei->focused_node;
+
+    if (fn->col+1 >= c_sensei->grid.curr_cols_in_row[fn->row])
+        return;
+
+    u32 target_col = fn->col + 1;
+
+    u32 frame_id = c_sensei->grid.data[fn->row][target_col][0];
+    compositor_focus_frame(c_sensei, frame_id);
+}
 
 u32 compositor_poll(CompositorSensei* c_sensei, KeyEvent* ev) {
     //
     // change focused frame
     //
-    if (ev->pressed && ev->key == KEY_1 && ev->shift && ev->super) {
-        compositor_focus_frame(c_sensei, 1);
-        return 1;
-    }
-    if (ev->pressed && ev->key == KEY_2 && ev->shift && ev->super) {
-        compositor_focus_frame(c_sensei, 2);
-        return 1;
-    }
-    if (ev->pressed && ev->key == KEY_3 && ev->shift && ev->super) {
-        compositor_focus_frame(c_sensei, 3);
-        return 1;
-    }
-    if (ev->pressed && ev->key == KEY_4 && ev->shift && ev->super) {
-        compositor_focus_frame(c_sensei, 4);
-        return 1;
-    }
-    if (ev->pressed && ev->key == KEY_5 && ev->shift && ev->super) {
-        compositor_focus_frame(c_sensei, 5);
-        return 1;
-    }
-    if (ev->pressed && ev->key == KEY_6 && ev->shift && ev->super) {
-        compositor_focus_frame(c_sensei, 6);
-        return 1;
-    }
-    if (ev->pressed && ev->key == KEY_7 && ev->shift && ev->super) {
-        compositor_focus_frame(c_sensei, 7);
-        return 1;
-    }
-    if (ev->pressed && ev->key == KEY_8 && ev->shift && ev->super) {
-        compositor_focus_frame(c_sensei, 8);
-        return 1;
-    }
-    if (ev->pressed && ev->key == KEY_9 && ev->shift && ev->super) {
-        compositor_focus_frame(c_sensei, 9);
-        return 1;
-    }
+    // if (ev->pressed && ev->key == KEY_1 && ev->shift && ev->super) {
+    //     compositor_focus_frame(c_sensei, 1);
+    //     return 1;
+    // }
+    // if (ev->pressed && ev->key == KEY_2 && ev->shift && ev->super) {
+    //     compositor_focus_frame(c_sensei, 2);
+    //     return 1;
+    // }
+    // if (ev->pressed && ev->key == KEY_3 && ev->shift && ev->super) {
+    //     compositor_focus_frame(c_sensei, 3);
+    //     return 1;
+    // }
+    // if (ev->pressed && ev->key == KEY_4 && ev->shift && ev->super) {
+    //     compositor_focus_frame(c_sensei, 4);
+    //     return 1;
+    // }
+    // if (ev->pressed && ev->key == KEY_5 && ev->shift && ev->super) {
+    //     compositor_focus_frame(c_sensei, 5);
+    //     return 1;
+    // }
+    // if (ev->pressed && ev->key == KEY_6 && ev->shift && ev->super) {
+    //     compositor_focus_frame(c_sensei, 6);
+    //     return 1;
+    // }
+    // if (ev->pressed && ev->key == KEY_7 && ev->shift && ev->super) {
+    //     compositor_focus_frame(c_sensei, 7);
+    //     return 1;
+    // }
+    // if (ev->pressed && ev->key == KEY_8 && ev->shift && ev->super) {
+    //     compositor_focus_frame(c_sensei, 8);
+    //     return 1;
+    // }
+    // if (ev->pressed && ev->key == KEY_9 && ev->shift && ev->super) {
+    //     compositor_focus_frame(c_sensei, 9);
+    //     return 1;
+    // }
     // 
     // create new frames
     //
@@ -408,6 +459,26 @@ u32 compositor_poll(CompositorSensei* c_sensei, KeyEvent* ev) {
         compositor_create_window_new_row(c_sensei);
         return 1;
     }
+    //
+    // move focused frame
+    //
+    if (ev->pressed && ev->key == KEY_H && ev->shift && ev->super) {
+        compositor_focus_left(c_sensei);
+        return 1;
+    }
+    if (ev->pressed && ev->key == KEY_J && ev->shift && ev->super) {
+        compositor_focus_down(c_sensei);
+        return 1;
+    }
+    if (ev->pressed && ev->key == KEY_K && ev->shift && ev->super) {
+        compositor_focus_up(c_sensei);
+        return 1;
+    }
+    if (ev->pressed && ev->key == KEY_L && ev->shift && ev->super) {
+        compositor_focus_right(c_sensei);
+        return 1;
+    }
+
 
 
     return 0;

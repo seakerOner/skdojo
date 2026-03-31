@@ -1,6 +1,6 @@
 # Seaker's Dojo
 
-![Skdojo landing page](./skdojo_V0.0_hello_world.png)
+![Skdojo landing page](./skdojo_V0.0._hello_world.png)
 
 **Seaker's Dojo (skdojo)** is a bare-metal computing environment 
 designed for direct interaction with the machine

@@ -214,12 +214,9 @@ static void comp_clean_borders(CompositorSensei* c_sensei) {
 
     for (u32 f = 1; f <= c_sensei->frame_count; f++) {
         CompWinBorder* border = &c_sensei->win_border[f];
-        CompWinFrame*  frame  = &c_sensei->win_frame[f];
 
         for (u32 t = 0; t < border->width; t++) {
             // top border
-            u32 on_corners = (t == 0) | (t + 1 == border->width);
-
             driver->draw_cell(c_sensei->window->framebuffer, 
                     border->start_height,
                     border->start_width + t,

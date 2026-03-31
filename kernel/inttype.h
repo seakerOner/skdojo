@@ -18,6 +18,8 @@ typedef u64                 size_t;
 
 #define NULL (void *)0
 
+#define UNUSED(x) (void)x
+
 #define KB(n) (n * 1024)
 #define MB(n) (n * (1024 * 1024))
 

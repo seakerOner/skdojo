@@ -3,8 +3,6 @@
 #define PROMP_OFFSET 1
 
 void terminal_toggle_cursor(DojoTerminal* terminal) {
-    VideoSensei* sensei_v = get_video_sensei();
-
     StyleColor inverted_color;
     char c;
 
@@ -298,10 +296,16 @@ void terminal_poll(DojoTerminal* terminal, KeyEvent* ev){
             terminal_toggle_cursor(terminal);
 
             if (ev->key == KEY_ENTER) {
-                terminal_putc(terminal, ev->ascii);
                 // TODO: interpret the input buffer
-                u32 x= 0;
+                u32 x= 0; 
+                while (x < terminal->input_buffer.index) {
+                    terminal_history_add_c(&terminal->history, terminal->input_buffer.data[x]);
+                    x++;
+                }
+                terminal_putc(terminal, ev->ascii);
+
                 terminal_print(terminal, "BUFFER OUTPUT: ");
+                x = 0;
                 while (x < terminal->input_buffer.index) {
                     terminal_putc(terminal, terminal->input_buffer.data[x]);
                     x++;
@@ -331,6 +335,8 @@ void terminal_poll(DojoTerminal* terminal, KeyEvent* ev){
 
 void terminal_on_resize(void* app, u32 w, u32 h) {
     DojoTerminal* t = app;
+    UNUSED(w);
+    UNUSED(h);
     // if (t->cursor_row >= h)
     //     t->cursor_row = h - 1;
     // if (t->cursor_col >= w)

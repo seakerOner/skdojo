@@ -80,6 +80,7 @@ CompWinFrame* compositor_create_window_current_row(CompositorSensei* c_sensei) {
     node->resize_offsets.right = 0;
     c_sensei->grid.data[grid_row][grid_col][grid_seg] = frame_id;
 
+    compositor_focus_frame(c_sensei, frame_id);
 
     comp_update_grid(c_sensei);
     comp_clear(frame, dojo_get_theme()->palette.main_colors);
@@ -150,6 +151,9 @@ void compositor_focus_frame(CompositorSensei* c_sensei, u32 frame_id) {
     f_node->row         = node->row;
     f_node->col         = node->col;
     f_node->col_segment = node->id;
+
+    comp_update_grid(c_sensei);
+    comp_draw_borders(c_sensei);
 }
 
 static void comp_clean_borders(CompositorSensei* c_sensei) {
@@ -194,11 +198,15 @@ static void comp_clean_borders(CompositorSensei* c_sensei) {
 
 static void comp_draw_borders(CompositorSensei* c_sensei) {
     VideoDriver* driver = &get_video_sensei()->driver;
-    StyleColor colors     = dojo_get_theme()->palette.main_colors;
+    StyleColor colors;     
 
     for (u32 f = 1; f <= c_sensei->frame_count; f++) {
         CompWinBorder* border = &c_sensei->win_border[f];
         CompWinFrame*  frame  = &c_sensei->win_frame[f];
+        if (frame->id == c_sensei->focused_node.frame_id)
+            colors = dojo_get_theme()->palette.focus_color;
+        else
+            colors = dojo_get_theme()->palette.main_colors;
 
         for (u32 t = 0; t < border->width; t++) {
             u32 on_left_cor = t == 0;

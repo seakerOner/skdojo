@@ -20,6 +20,8 @@ static inline void set_vga_theme() {
             _vga->highlight_color.fg.value    = VGA_YELLOW;
             _vga->comment_color.bg.value      = VGA_BLUE;
             _vga->comment_color.fg.value      = VGA_BLACK;
+            _vga->focus_color.bg.value        = VGA_BLUE;
+            _vga->focus_color.fg.value        = VGA_DARK_GRAY;
             break;
         case THEME_ZENMODE:
             _vga->main_colors.bg.value        = VGA_LIGHT_GRAY;
@@ -32,6 +34,8 @@ static inline void set_vga_theme() {
             _vga->highlight_color.fg.value    = VGA_DARK_GRAY;
             _vga->comment_color.bg.value      = VGA_LIGHT_GRAY;
             _vga->comment_color.fg.value      = VGA_BROWN;
+            _vga->focus_color.bg.value        = VGA_LIGHT_GRAY;
+            _vga->focus_color.fg.value        = VGA_WHITE;
             break;
         case THEME_PURE:
             _vga->main_colors.bg.value        = VGA_WHITE;
@@ -44,6 +48,8 @@ static inline void set_vga_theme() {
             _vga->highlight_color.fg.value    = VGA_DARK_GRAY;
             _vga->comment_color.bg.value      = VGA_WHITE;
             _vga->comment_color.fg.value      = VGA_BROWN;
+            _vga->focus_color.bg.value        = VGA_WHITE;
+            _vga->focus_color.fg.value        = VGA_BLUE;
             break;
         case THEME_DARKMODE:
             _vga->main_colors.bg.value        = VGA_BLACK;
@@ -56,6 +62,8 @@ static inline void set_vga_theme() {
             _vga->highlight_color.fg.value    = VGA_YELLOW;
             _vga->comment_color.bg.value      = VGA_BLACK;
             _vga->comment_color.fg.value      = VGA_BLUE;
+            _vga->focus_color.bg.value        = VGA_BLACK;
+            _vga->focus_color.fg.value        = VGA_LIGHT_CYAN;
             break;
         case THEME_MATRIX:
             _vga->main_colors.bg.value        = VGA_BLACK;
@@ -68,6 +76,8 @@ static inline void set_vga_theme() {
             _vga->highlight_color.fg.value    = VGA_YELLOW;
             _vga->comment_color.bg.value      = VGA_BLACK;
             _vga->comment_color.fg.value      = VGA_LIGHT_BLUE;
+            _vga->focus_color.bg.value        = VGA_BLACK;
+            _vga->focus_color.fg.value        = VGA_LIGHT_GRAY;
             break;
         default:
             break;

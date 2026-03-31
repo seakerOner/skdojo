@@ -35,6 +35,7 @@ typedef struct {
     StyleColor success_color;
     StyleColor highlight_color;
     StyleColor comment_color;
+    StyleColor focus_color;
 } ThemePalette;
 
 // theme in use

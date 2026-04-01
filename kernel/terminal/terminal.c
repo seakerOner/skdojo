@@ -32,8 +32,8 @@ static void terminal_history_add_c(TerminalHistory* h, char c) {
 int terminal_new(CompWinFrame* frame, DojoTerminal* t) {
     const DojoTheme* theme = dojo_get_theme();
 
-    t->history.line_capacity       = TERMINAL_MAX_HISTORY;
-    t->history.c_count          = 0;
+    t->history.line_capacity  = TERMINAL_MAX_HISTORY;
+    t->history.c_count        = 0;
     t->history.line_len       = TERMINAL_BUFFER_LEN;
     // TODO: use heap space not from the kernel heap itself
     t->history.data           = (char*)kheap_reserve(
@@ -41,15 +41,25 @@ int terminal_new(CompWinFrame* frame, DojoTerminal* t) {
                                             KB(4)));
     if (!t->history.data)
         return -1;
-    t->frame                  = frame;
-    t->frame->app             = t;
-    t->frame->on_resize       = (void *)terminal_on_resize;
-    t->cursor_char            = theme->cursor;
-    t->cursor_row             = 0;
-    t->cursor_col             = 0;
-    t->input_buffer.cursor    = 0;
-    t->input_buffer.index     = 0;
-    t->input_buffer.len       = TERMINAL_BUFFER_LEN;
+    DojoProcess* p = processes_sensei_new_handle();
+    if (p == NULL) {
+        return -1;
+    }
+
+    t->frame                        = frame;
+    t->frame->process               = p;
+
+
+    t->frame->process->app_data     = t;
+    t->frame->process->on_resize    = (void *)terminal_on_resize;
+    t->frame->process->on_event     = (void *)terminal_event;
+
+    t->cursor_char                  = theme->cursor;
+    t->cursor_row                   = 0;
+    t->cursor_col                   = 0;
+    t->input_buffer.cursor          = 0;
+    t->input_buffer.index           = 0;
+    t->input_buffer.len             = TERMINAL_BUFFER_LEN;
     t->input_buffer.input_start_row = 0;
     t->input_buffer.input_start_col = 0;
 
@@ -278,7 +288,8 @@ static inline void terminal_cursor_move_front(DojoTerminal* terminal) {
 
 }
 
-void terminal_poll(DojoTerminal* terminal, KeyEvent* ev){
+void terminal_event(void* t, KeyEvent* ev){
+        DojoTerminal* terminal = (DojoTerminal*)t;
         if (ev->pressed && ev->key == KEY_ARROW_LEFT) {
             terminal_toggle_cursor(terminal);
             terminal_cursor_move_back(terminal);
@@ -316,8 +327,8 @@ void terminal_poll(DojoTerminal* terminal, KeyEvent* ev){
                 terminal->input_buffer.index  = 0;
                 terminal->input_buffer.input_start_row = terminal->cursor_row;
                 terminal->input_buffer.input_start_col = terminal->cursor_col;
-
                 terminal_putc(terminal, '>');
+
                 terminal_toggle_cursor(terminal);
                 return;
             }

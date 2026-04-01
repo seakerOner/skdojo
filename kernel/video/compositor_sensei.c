@@ -6,6 +6,7 @@ CompositorSensei compositor_sensei = {0};
 
 CompositorSensei* create_compositor_sensei(DojoWindow* window) {
 
+    //CompositorSensei compositor_sensei = {0};
     compositor_sensei.window = window;
     compositor_sensei.max_frames                = MAX_WINDOWS;
     compositor_sensei.focused_window            = &wmanager_get_focused()->id;
@@ -345,8 +346,8 @@ void comp_update_grid(CompositorSensei* c_sensei) {
         frame->width          = abs_width  - 2;
         frame->height         = abs_height - 2;
 
-        if (frame->on_resize)
-            frame->on_resize(frame->app, frame->width, frame->height);
+        if (frame->process && frame->process->on_resize)
+            frame->process->on_resize(frame->process->app_data, frame->width, frame->height);
         else 
             comp_clear(frame, dojo_get_theme()->palette.main_colors); // when no app is on window and to clear trash 
     }
@@ -367,6 +368,7 @@ void compositor_focus_up(CompositorSensei* c_sensei) {
 
     compositor_focus_frame(c_sensei, frame_id);
 }
+
 void compositor_focus_down(CompositorSensei* c_sensei) {
     FocusedNode* fn = &c_sensei->focused_node;
 
@@ -390,6 +392,7 @@ void compositor_focus_left(CompositorSensei* c_sensei) {
 
     u32 target_col = fn->col - 1;
 
+    // layer 0 is assumed to be the main app layer
     u32 frame_id = c_sensei->grid.data[fn->row][target_col][0];
     compositor_focus_frame(c_sensei, frame_id);
 }
@@ -401,53 +404,17 @@ void compositor_focus_right(CompositorSensei* c_sensei) {
 
     u32 target_col = fn->col + 1;
 
+    // layer 0 is assumed to be the main app layer
     u32 frame_id = c_sensei->grid.data[fn->row][target_col][0];
     compositor_focus_frame(c_sensei, frame_id);
 }
 
+CompWinFrame* compositor_get_focused_frame(CompositorSensei* c_sensei) {
+    FocusedNode* fn = &c_sensei->focused_node;
+    return &c_sensei->win_frame[fn->frame_id];
+}
+
 u32 compositor_poll(CompositorSensei* c_sensei, KeyEvent* ev) {
-    //
-    // change focused frame
-    //
-    // if (ev->pressed && ev->key == KEY_1 && ev->shift && ev->super) {
-    //     compositor_focus_frame(c_sensei, 1);
-    //     return 1;
-    // }
-    // if (ev->pressed && ev->key == KEY_2 && ev->shift && ev->super) {
-    //     compositor_focus_frame(c_sensei, 2);
-    //     return 1;
-    // }
-    // if (ev->pressed && ev->key == KEY_3 && ev->shift && ev->super) {
-    //     compositor_focus_frame(c_sensei, 3);
-    //     return 1;
-    // }
-    // if (ev->pressed && ev->key == KEY_4 && ev->shift && ev->super) {
-    //     compositor_focus_frame(c_sensei, 4);
-    //     return 1;
-    // }
-    // if (ev->pressed && ev->key == KEY_5 && ev->shift && ev->super) {
-    //     compositor_focus_frame(c_sensei, 5);
-    //     return 1;
-    // }
-    // if (ev->pressed && ev->key == KEY_6 && ev->shift && ev->super) {
-    //     compositor_focus_frame(c_sensei, 6);
-    //     return 1;
-    // }
-    // if (ev->pressed && ev->key == KEY_7 && ev->shift && ev->super) {
-    //     compositor_focus_frame(c_sensei, 7);
-    //     return 1;
-    // }
-    // if (ev->pressed && ev->key == KEY_8 && ev->shift && ev->super) {
-    //     compositor_focus_frame(c_sensei, 8);
-    //     return 1;
-    // }
-    // if (ev->pressed && ev->key == KEY_9 && ev->shift && ev->super) {
-    //     compositor_focus_frame(c_sensei, 9);
-    //     return 1;
-    // }
-    // 
-    // create new frames
-    //
     if (ev->pressed && ev->key == KEY_ENTER && ev->shift && ev->super) {
         compositor_create_window_current_row(c_sensei);
         return 1;
@@ -475,8 +442,6 @@ u32 compositor_poll(CompositorSensei* c_sensei, KeyEvent* ev) {
         compositor_focus_right(c_sensei);
         return 1;
     }
-
-
 
     return 0;
 }

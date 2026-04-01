@@ -3,6 +3,7 @@
 
 #include "wmanager_sensei.h"
 #include "../keyboard/keyboard_sensei.h"
+#include "../process/process.h"
 
 #define CS_GRID_ROWS MAX_WINDOWS
 #define CS_GRID_COLS MAX_WINDOWS
@@ -26,22 +27,19 @@ typedef struct {
 
 typedef struct {
     DojoWindow* parent_window;
+    DojoProcess* process;
     u32  id;
     u32  start_width;
     u32  start_height;
     u32  width;
     u32  height;
-
-    void* app;
-    void (*on_resize)(void* app, u32 new_w, u32 new_h);
-    // void (*on_render)(void* app);
 } CompWinFrame;
 
 typedef struct {
-    u32         frame_id;
-    u32         row;
-    u32         col;
-    u32         col_segment;
+    u32 frame_id;
+    u32 row;
+    u32 col;
+    u32 col_segment;
 } FocusedNode;
 
 // will be used so each frame can have N layers (popup windows, notifications, menus, etc..)
@@ -86,6 +84,8 @@ void compositor_focus_up(CompositorSensei* c_sensei);
 void compositor_focus_down(CompositorSensei* c_sensei);
 void compositor_focus_left(CompositorSensei* c_sensei);
 void compositor_focus_right(CompositorSensei* c_sensei);
+
+CompWinFrame* compositor_get_focused_frame(CompositorSensei* c_sensei);
 
 // 1 -> polled | 0 ->ignored
 u32 compositor_poll(CompositorSensei* c_sensei, KeyEvent* ev);

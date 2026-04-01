@@ -5,6 +5,7 @@
 #include "../video/wmanager_sensei.h"
 #include "../keyboard/keyboard_sensei.h"
 #include "../video/compositor_sensei.h"
+#include "../process/processes_sensei.h"
 #include "../memory/kheap.h"
 
 #define TERMINAL_MAX_HISTORY 512
@@ -39,6 +40,11 @@ typedef struct {
     char cursor_char;      // from DojoTheme 
 } DojoTerminal;
 
+typedef struct {
+    DojoProcess* base;
+    DojoTerminal terminal;
+} TerminalProcess;
+
 int  terminal_new(CompWinFrame* frame, DojoTerminal* t);
 
 void terminal_print(DojoTerminal* terminal, char* string);
@@ -49,7 +55,7 @@ void terminal_newline(DojoTerminal* terminal);
 void terminal_gotoline(DojoTerminal* terminal, const u32 line);
 void terminal_scroll(DojoTerminal* terminal);
 
-void terminal_poll(DojoTerminal* terminal, KeyEvent* ev);
+void terminal_event(void* terminal, KeyEvent* ev);
 void terminal_on_resize(void* app, u32 w, u32 h);
 
 void terminal_render(DojoTerminal* terminal);

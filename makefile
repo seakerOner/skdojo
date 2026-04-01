@@ -71,6 +71,11 @@ interrupts.o: $(ARCH_PATH)/interrupts.asm
 #
 # KERNEL EXTENSIONS
 #
+tatami.o: ./kernel/tatami/tatami.c
+	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
+
+process.o: ./kernel/process/process.c
+	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
 
 themes.o: ./kernel/themes/themes.c
 	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
@@ -103,11 +108,14 @@ keyboardsensei.o: ./kernel/keyboard/keyboard_sensei.c
 memorysensei.o: ./kernel/memory/memory_sensei.c
 	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
 
+processes_sensei.o : ./kernel/process/processes_sensei.c
+	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
+
 #
 # Build kernel
 #
 
-KERNEL_OBJS = kernel.o interrupts.o k_interrupts.o vga.o vgadriver.o themes.o printk.o terminal.o videosensei.o wmanagersensei.o ps2keyboard.o keyboardsensei.o memorysensei.o compositorsensei.o kheap.o
+KERNEL_OBJS = kernel.o interrupts.o k_interrupts.o vga.o vgadriver.o themes.o printk.o terminal.o videosensei.o wmanagersensei.o ps2keyboard.o keyboardsensei.o memorysensei.o compositorsensei.o kheap.o tatami.o process.o processes_sensei.o
 KERNEL_OBJS_BUILD = $(addprefix ./build/, $(KERNEL_OBJS))
 
 kernel.bin: $(KERNEL_OBJS)

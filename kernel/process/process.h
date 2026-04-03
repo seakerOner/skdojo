@@ -15,8 +15,16 @@ typedef struct {
     u64 r8, r9, r10, r11, r12, r13, r14, r15;
 } CPUContext;
 
+typedef enum {
+    PROCESS_RUNNING,
+    PROCESS_SLEEPING,
+    PROCESS_DEAD
+} ProcessState;
+
 typedef struct {
-    void* app_data;
+    u64          pid;
+    ProcessState state;
+    void*        app_data;
 
     // void (*on_start)(void *);
     void (*on_event)(void*, KeyEvent*);

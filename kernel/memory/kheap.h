@@ -22,6 +22,9 @@ void start_kheap(MemorySensei* mem_sensei);
 // returns NULL on failure
 void* kheap_reserve(u64 num_pages);
 
+// returns NULL on failure, original memory is untouched on failure
+void* kheap_resize(void* ptr, u64 old_num_pages, u64 num_pages);
+
 // on page double free poisons memory (0xDEDEDEDE....)
 u32   kheap_free   (void* ptr, u64 num_pages);
 

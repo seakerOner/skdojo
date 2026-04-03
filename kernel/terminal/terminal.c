@@ -29,7 +29,11 @@ static void terminal_history_add_c(TerminalHistory* h, char c) {
     h->data[abs_idx] = c;
 }
 
-int terminal_new(CompWinFrame* frame, DojoTerminal* t) {
+DojoTerminal* terminal_new(CompWinFrame* frame, DojoTerminal* t) {
+    if (!t) return NULL;
+
+    *t = (DojoTerminal){0};
+
     const DojoTheme* theme = dojo_get_theme();
 
     t->history.line_capacity  = TERMINAL_MAX_HISTORY;
@@ -40,16 +44,18 @@ int terminal_new(CompWinFrame* frame, DojoTerminal* t) {
                                 CEIL_PAGES(t->history.line_capacity * t->history.line_len, 
                                             KB(4)));
     if (!t->history.data)
-        return -1;
+        return NULL;
+
     DojoProcess* p = processes_sensei_new_handle();
     if (p == NULL) {
-        return -1;
+        return NULL;
     }
 
     t->frame                        = frame;
     t->frame->process               = p;
 
 
+    t->frame->process->state        = PROCESS_RUNNING;
     t->frame->process->app_data     = t;
     t->frame->process->on_resize    = (void *)terminal_on_resize;
     t->frame->process->on_event     = (void *)terminal_event;
@@ -69,12 +75,12 @@ int terminal_new(CompWinFrame* frame, DojoTerminal* t) {
     }
 
     terminal_putc(t, '>');
-
+    
     t->input_buffer.input_start_row = t->cursor_row;
     t->input_buffer.input_start_col = t->cursor_col;
 
     terminal_toggle_cursor(t);
-    return 1;
+    return t;
 }
 
 

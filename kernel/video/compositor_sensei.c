@@ -109,6 +109,7 @@ CompWinFrame* compositor_create_window_current_row(CompositorSensei* c_sensei) {
     CompWinFrame* frame   = &c_sensei->win_frame[frame_id];
     frame->id             = frame_id;
     frame->parent_window  = c_sensei->window;
+    frame->process        = NULL;
     
     u32 grid_row = row;
     u32 grid_col = col;

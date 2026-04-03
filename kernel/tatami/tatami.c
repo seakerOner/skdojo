@@ -2,7 +2,10 @@
 
 DojoTatami dojotatami = {0};
 
-DojoTatami* tatami_start(VideoSensei* sensei_v, MemorySensei* sensei_mem) {
+DojoTatami* tatami_start() {
+    VideoSensei* sensei_v    = get_video_sensei();
+    MemorySensei* sensei_mem = get_mem_sensei();
+
     create_wmanager_sensei();
 
     i32 root_window_id = wmanager_create_window(0, 0, 

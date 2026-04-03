@@ -30,7 +30,7 @@ typedef struct {
 } TerminalInput;
 
 typedef struct {
-    CompWinFrame*       frame;
+    CompWinFrame*   frame;
     TerminalHistory history;
     TerminalInput   input_buffer;
 
@@ -45,7 +45,8 @@ typedef struct {
     DojoTerminal terminal;
 } TerminalProcess;
 
-int  terminal_new(CompWinFrame* frame, DojoTerminal* t);
+DojoTerminal* terminal_new(CompWinFrame* frame, DojoTerminal* t);
+//DojoTerminal* terminal_new(CompWinFrame* frame);
 
 void terminal_print(DojoTerminal* terminal, char* string);
 void terminal_printDEC(DojoTerminal* terminal, u64 num);

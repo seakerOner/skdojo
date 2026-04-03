@@ -34,11 +34,70 @@ static int _find_free_pages(u64 num_pages) {
     return -1;
 }
 
+static int _find_realloc_pages_free(u64 ptr_idx, u64 old_num_pages, u64 num_pages) {
+    i64 extra_pages = num_pages - old_num_pages;
+    if (extra_pages < 0) return -1;
+
+    u64 count = 0;
+
+    for (u64 x = ptr_idx+num_pages; x < k_heap.capacity; x++) {
+        if (!bitmap_get(x)) {
+            count++;
+
+            if (count == extra_pages)
+                return ptr_idx;     // there is enough space to simply increase the size without base reallocation
+        } else {
+            if (count < extra_pages)
+                break;
+        }
+    }
+
+    // we need to search for available space, realloc the memory and mark as free the old memory space
+    u64 start = 0;
+    count     = 0;
+
+    for (u64 x = k_heap.first_free_index; x < k_heap.capacity; x++) {
+        if (!bitmap_get(x)) {
+            if (count == 0)
+                start = x;
+
+            count++;
+
+            if (count == num_pages) {
+                // mark as free the old pages
+                for (u64 p = ptr_idx; p < ptr_idx + old_num_pages; p++)
+                    if (bitmap_get(p))
+                        bitmap_clear(p);
+
+                // mark as used the new already reserved pages
+                for (u64 p = start; p < start + old_num_pages; p++)
+                    if (!bitmap_get(p))
+                        bitmap_set(p);
+
+                // copy bytes over to new location
+                u8* old_ptr   = k_heap.base + (ptr_idx * k_heap.page_size);
+                u8* new_ptr   = k_heap.base + (start * k_heap.page_size);
+                u64 num_bytes = k_heap.page_size * old_num_pages;
+
+                for (u64 b = 0; b < num_bytes; b++)
+                     new_ptr[b] = old_ptr[b];
+
+                return start;
+            }
+        } else {
+            count = 0;
+        }
+    }
+
+    return -1;
+}
+
 void start_kheap(MemorySensei* mem_sensei) {
-    k_heap.base      = (u8*)KERNEL_HEAP_START;     // virtual memory address
-    k_heap.capacity  = mem_sensei->internal.kpage_index;
-    k_heap.page_size = KB(4);
-    k_heap.index     = 0;
+    k_heap.base             = (u8*)KERNEL_HEAP_START;     // virtual memory address
+    k_heap.capacity         = mem_sensei->internal.kpage_index;
+    k_heap.page_size        = KB(4);
+    k_heap.index            = 0;
+    k_heap.first_free_index = 0;
 
     for (u32 x = 0; x < k_heap.capacity / 8; x++) {
         k_heap.bitmap[x] = 0;
@@ -72,6 +131,32 @@ void* kheap_reserve(u64 num_pages) {
     get_mem_sensei()->kernel_info.heap_bytes_free -= (num_pages * k_heap.page_size);
 
     return (void *)((u8 *)k_heap.base + (start * k_heap.page_size));
+};
+
+void* kheap_resize(void* ptr, u64 old_num_pages, u64 num_pages) {
+    if (!ptr)
+        return NULL;
+    if ((u64)ptr >= (k_heap.capacity * k_heap.page_size + (u64)k_heap.base) ||
+            (u64)ptr < (u64)k_heap.base)
+        return NULL;
+
+    u64 abs_idx = ((u64)ptr - (u64)k_heap.base) / k_heap.page_size;
+
+    u64 res = _find_realloc_pages_free(abs_idx, old_num_pages, num_pages);
+
+    if (res < 0)
+        return NULL;
+
+
+    for (u64 x = 0; x < num_pages; x++)
+        bitmap_set(res + x);
+
+    get_mem_sensei()->kernel_info.heap_bytes_used += ((num_pages * k_heap.page_size) 
+                                                        - (old_num_pages * k_heap.page_size));
+    get_mem_sensei()->kernel_info.heap_bytes_free -= ((num_pages * k_heap.page_size)
+                                                        - (old_num_pages * k_heap.page_size));
+
+    return (void *)((u8*)k_heap.base + (res * k_heap.page_size));
 };
 
 u32 kheap_free(void* ptr, u64 num_pages) {

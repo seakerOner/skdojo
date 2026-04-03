@@ -26,11 +26,16 @@ void kmain(BiosBootInfo* boot_info) {
 
     dojo_set_theme(THEME_DARKMODE);
 
-    DojoTatami* tatami = tatami_start(sensei_v, sensei_mem);
+    DojoTatami* tatami = tatami_start();
 
     CompWinFrame* root_win_frame = compositor_create_window_current_row(tatami->cmp_sensei);
     CompWinFrame* second_win_frame = compositor_create_window_current_row(tatami->cmp_sensei);
 
+    if (!root_win_frame || !second_win_frame)
+        while (1);  // hang
+
+    // DojoTerminal* root_terminal = terminal_new(root_win_frame);
+    // DojoTerminal* second_terminal = terminal_new(second_win_frame);
     DojoTerminal root_terminal = {0};
     terminal_new(root_win_frame, &root_terminal);
     DojoTerminal second_terminal = {0};
@@ -42,6 +47,8 @@ void kmain(BiosBootInfo* boot_info) {
     terminal_print(&root_terminal, "Welcome to the Dojo!\n>Using Tatami\nContact: seakerone@proton.me\n\n");
     terminal_putc(&root_terminal, '>');
 
+    // while (1);
+    // crashes here
     terminal_print(&second_terminal, "Using VGA text mode \n");
     terminal_print(&second_terminal, ">PHYSICAL RAM STATS:\n");
     terminal_print(&second_terminal, "- [USABLE] ~");

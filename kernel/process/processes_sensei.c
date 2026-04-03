@@ -11,7 +11,10 @@ DojoProcess* processes_sensei_new_handle() {
     if (processes_sensei.count >= processes_sensei.capacity) {
         return NULL;
     }
-    return &processes_sensei.processes[processes_sensei.count++];
+    DojoProcess* proc = &processes_sensei.processes[processes_sensei.count];
+    proc->pid = processes_sensei.count++;
+
+    return proc;
 }
 
 void processes_update() {

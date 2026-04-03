@@ -58,6 +58,7 @@ void terminal_scroll(DojoTerminal* terminal);
 void terminal_event(void* terminal, KeyEvent* ev);
 void terminal_on_resize(void* app, u32 w, u32 h);
 
-void terminal_render(DojoTerminal* terminal);
+void terminal_destroy(void* terminal);
+void terminal_render(void* terminal);
 
 #endif

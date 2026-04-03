@@ -8,12 +8,14 @@
 #include "memory/memory_sensei.h"
 #include "memory/kheap.h"
 #include "process/processes_sensei.h"
+#include "time/time_sensei.h"
 
 #include "tatami/tatami.h"
 #include "printk/printk.h"
 
 void kmain(BiosBootInfo* boot_info) {
     init_interrupts_x86();
+    start_time_sensei();
 
     MemorySensei* sensei_mem = create_memory_sensei(boot_info);
     create_processes_sensei();
@@ -42,24 +44,24 @@ void kmain(BiosBootInfo* boot_info) {
 
     terminal_print(&second_terminal, "Using VGA text mode \n");
     terminal_print(&second_terminal, ">PHYSICAL RAM STATS:\n");
-    terminal_print(&second_terminal, "- USABLE MEMORY:   ~");
+    terminal_print(&second_terminal, "- [USABLE] ~");
     terminal_printDEC(&second_terminal, sensei_mem->physical_stats.bytes_usable/MB(1));
-    terminal_print(&second_terminal, "MB\n");
-    terminal_print(&second_terminal, "- RESERVED MEMORY: ~");
+    terminal_print(&second_terminal, "MB");
+    terminal_print(&second_terminal, " [RESERVED] ~");
     terminal_printDEC(&second_terminal, sensei_mem->physical_stats.bytes_reserved/KB(1));
     terminal_print(&second_terminal, "KB\n");
-    terminal_print(&second_terminal, "- BAD MEMORY:      ~");
+    terminal_print(&second_terminal, "- [BAD]    ~");
     terminal_printDEC(&second_terminal, sensei_mem->physical_stats.bytes_bad_mem/KB(1));
     terminal_print(&second_terminal, "KB\n");
 
-    terminal_print(&second_terminal, ">KERNEL MEM STATS:\n");
-    terminal_print(&second_terminal, "- HEAP CAPACITY:   ~");
+    terminal_print(&second_terminal, ">KERNEL HEAP MEM STATS:\n");
+    terminal_print(&second_terminal, "- [CAPACITY] ~");
     terminal_printDEC(&second_terminal, sensei_mem->kernel_info.heap_bytes_cap/MB(1));
-    terminal_print(&second_terminal, "MB\n");
-    terminal_print(&second_terminal, "- HEAP FREE:       ~");
+    terminal_print(&second_terminal, "MB");
+    terminal_print(&second_terminal, " [FREE] ~");
     terminal_printDEC(&second_terminal, sensei_mem->kernel_info.heap_bytes_free/MB(1));
     terminal_print(&second_terminal, "MB\n");
-    terminal_print(&second_terminal, "- HEAP USED:       ~");
+    terminal_print(&second_terminal, "- [USED]     ~");
     terminal_printDEC(&second_terminal, sensei_mem->kernel_info.heap_bytes_used/KB(1));
     terminal_print(&second_terminal, "KB\n");
     terminal_print(&second_terminal, "- PAGES HANGED:     ");
@@ -72,6 +74,7 @@ void kmain(BiosBootInfo* boot_info) {
             "- Compositor Sensei\n"
             "- Keyboard Sensei\n"
             "- Processes Sensei\n"
+            "- Time Sensei\n"
             "\n");
     terminal_putc(&second_terminal, '>');
     

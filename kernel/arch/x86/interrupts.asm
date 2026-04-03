@@ -2,6 +2,7 @@ bits 64
 
 global init_interrupts_x86
 extern irq1_kernel_intrpt
+extern irq0_kernel_intrpt
 
 %macro SET_IDT_ENTRY 2
 mov rax, %2 
@@ -31,10 +32,10 @@ init_interrupts_x86:
     push rsi
     push rdi
 
-
-
     call remap_pic
     ; ----
+    ; set IRQ0 (32) TIMER TICK
+    SET_IDT_ENTRY idt_start + 32 * 16, irq0_stub
     ; set IRQ1 (33) KEYBOARD DATA READY
     SET_IDT_ENTRY idt_start + 33 * 16, irq1_stub
 
@@ -50,6 +51,29 @@ init_interrupts_x86:
     pop rbx
     pop rax
     ret
+
+; TIMER
+irq0_stub:
+push rax
+push rbx
+push rcx
+push rdx
+push rsi
+push rdi
+
+call irq0_kernel_intrpt
+
+mov al, 0x20
+out 0x20, al
+
+pop rdi
+pop rsi
+pop rdx
+pop rcx
+pop rbx
+pop rax
+
+iretq
 
 ; KEYBOARD DATA READY
 irq1_stub:
@@ -73,6 +97,7 @@ pop rbx
 pop rax
 
 iretq
+
 
 
 

@@ -53,6 +53,7 @@ int terminal_new(CompWinFrame* frame, DojoTerminal* t) {
     t->frame->process->app_data     = t;
     t->frame->process->on_resize    = (void *)terminal_on_resize;
     t->frame->process->on_event     = (void *)terminal_event;
+    t->frame->process->on_destroy   = (void *)terminal_destroy;
 
     t->cursor_char                  = theme->cursor;
     t->cursor_row                   = 0;
@@ -390,7 +391,16 @@ static inline u32 _terminal_get_history_start(DojoTerminal* t) {
     return x;
 }
 
-void terminal_render(DojoTerminal* t) {
+void terminal_destroy(void* terminal) {
+    DojoTerminal* t = (DojoTerminal*)terminal;
+    kheap_free(t->history.data, CEIL_PAGES(t->history.line_capacity * t->history.line_len, KB(4)));
+    t->history.data          = NULL;
+    t->history.line_capacity = 0;
+    t->history.c_count       = 0;
+}
+
+void terminal_render(void* term) {
+    DojoTerminal* t = (DojoTerminal*)term;
     comp_clear(t->frame, dojo_get_theme()->palette.main_colors);
 
     StyleColor colors = dojo_get_theme()->palette.main_colors;

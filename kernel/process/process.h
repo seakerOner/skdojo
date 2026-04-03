@@ -22,6 +22,7 @@ typedef struct {
     void (*on_event)(void*, KeyEvent*);
     void (*on_update)(void*);
     void (*on_resize)(void* app, u32 new_w, u32 new_h);
+    void (*on_destroy)(void*);
 
     // TODO:
     //

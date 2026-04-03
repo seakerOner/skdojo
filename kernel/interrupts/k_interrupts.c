@@ -6,6 +6,17 @@ static inline unsigned char inb(unsigned short port) {
     return result;
 }
 
+volatile u64 ticks = 0;
+
+volatile u64* get_time_ticker() {
+    return &ticks;
+}
+
+// TIMER interrupt
+void irq0_kernel_intrpt() {
+    ticks++;
+};
+
 // PS/2 keyboard interrupt 
 void irq1_kernel_intrpt() {
     KeyEvent event = ps2_keyboard_translate(inb(0x60));

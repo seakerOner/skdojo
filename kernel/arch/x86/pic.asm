@@ -32,12 +32,22 @@ mov al, 0x01
 out 0x21, al
 out 0xA1, al
 
+; (for timer) channel 0, lobyte/hibyte, mode 3 (square wave)
+mov al, 00110110b
+out 0x43, al 
+
+; PIT base clock / 800 = freq ==> PIT base clock / freq = Hz ==> 1 / Hz = tick_s  ~800Hz (1 tick = ~1.25ms)
+mov ax, 1193182 / 800
+out 0x40, al    ; low byte 
+mov al, ah 
+out 0x40, al    ; hight byte
+
 ; disable all IRQs
 ; mov al, 0xFF
 ; out 0x21, al
 ; out 0xA1, al
 
-mov al, 11111101b      ; only IRQ1 active (keyboard)
+mov al, 11111100b      ; IRQ0 (timer) / IRQ1 (keyboard)
 out 0x21, al
 mov al, 0xFF
 out 0xA1, al

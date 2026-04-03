@@ -77,6 +77,7 @@ void kmain(BiosBootInfo* boot_info) {
             "- Time Sensei\n"
             "\n");
     terminal_putc(&second_terminal, '>');
+
     
     while (1) {
         tatami_poll(tatami->cmp_sensei);

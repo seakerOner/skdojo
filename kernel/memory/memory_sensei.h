@@ -2,6 +2,7 @@
 #define MEMORY_SENSEI_H
 
 #include "../inttype.h"
+#include "kata.h"
 #include "../bios_boot_info.h"
 
 #define CONFIG_PHYSICAL_START 0x100000
@@ -82,6 +83,7 @@ typedef struct {
 } InternalMemSensei;
 
 typedef struct {
+    KataAllocator* kata;
     MemoryPhyInfo physical_stats;
     MemoryKernelInfo kernel_info;
     InternalMemSensei internal;

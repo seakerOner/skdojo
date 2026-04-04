@@ -89,6 +89,12 @@ terminal.o: ./kernel/terminal/terminal.c
 kheap.o: ./kernel/memory/kheap.c
 	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
 
+kslab.o: ./kernel/memory/kslab.c
+	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
+
+kata.o: ./kernel/memory/kata.c
+	$(CC) -ffreestanding -nostdlib -m64 -c $^ -o ./build/$@
+
 #
 # SENSEIS
 #
@@ -118,7 +124,7 @@ time_sensei.o: ./kernel/time/time_sensei.c
 # Build kernel
 #
 
-KERNEL_OBJS = kernel.o interrupts.o k_interrupts.o vga.o vgadriver.o themes.o printk.o terminal.o videosensei.o wmanagersensei.o ps2keyboard.o keyboardsensei.o memorysensei.o compositorsensei.o kheap.o tatami.o process.o processes_sensei.o time_sensei.o
+KERNEL_OBJS = kernel.o interrupts.o k_interrupts.o vga.o vgadriver.o themes.o printk.o terminal.o videosensei.o wmanagersensei.o ps2keyboard.o keyboardsensei.o memorysensei.o compositorsensei.o kheap.o tatami.o process.o processes_sensei.o time_sensei.o kslab.o kata.o
 KERNEL_OBJS_BUILD = $(addprefix ./build/, $(KERNEL_OBJS))
 
 kernel.bin: $(KERNEL_OBJS)

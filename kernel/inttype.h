@@ -19,6 +19,12 @@ typedef u8                 boolean;
 
 #define NULL (void *)0
 
+#define FILL(ptr, c, len_bytes)             \
+    do {                                    \
+        for (u64 x = 0; x < len_bytes; x++) \
+            *(((u8*)ptr)+x) = c;            \
+    } while (0);
+
 #define TRUE  1 
 #define FALSE 0
 
@@ -26,6 +32,7 @@ typedef u8                 boolean;
 
 #define KB(n) (n * 1024)
 #define MB(n) (n * (1024 * 1024))
+#define GB(n) (n * (1024 * 1024 * 1024))
 
 
 #endif

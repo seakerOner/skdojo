@@ -2,6 +2,7 @@
 #include "./bios_boot_info.h"
 
 #include "interrupts/k_interrupts.h"
+#include "terminal/terminal.h"
 #include "themes/themes.h"
 
 #include "video/video_sensei.h"
@@ -14,13 +15,12 @@
 #include "printk/printk.h"
 
 void kmain(BiosBootInfo* boot_info) {
-    init_interrupts_x86();
-    start_time_sensei();
 
     MemorySensei* sensei_mem = create_memory_sensei(boot_info);
-    create_processes_sensei();
 
-    start_kheap(sensei_mem); // default 14MB virtual memory (will be lower if the system has less than 14MB)
+    init_interrupts_x86();
+    start_time_sensei();
+    create_processes_sensei();
 
     VideoSensei* sensei_v = create_video_sensei();
 
@@ -34,8 +34,6 @@ void kmain(BiosBootInfo* boot_info) {
     if (!root_win_frame || !second_win_frame)
         while (1);  // hang
 
-    // DojoTerminal* root_terminal = terminal_new(root_win_frame);
-    // DojoTerminal* second_terminal = terminal_new(second_win_frame);
     DojoTerminal root_terminal = {0};
     terminal_new(root_win_frame, &root_terminal);
     DojoTerminal second_terminal = {0};
@@ -47,8 +45,6 @@ void kmain(BiosBootInfo* boot_info) {
     terminal_print(&root_terminal, "Welcome to the Dojo!\n>Using Tatami\nContact: seakerone@proton.me\n\n");
     terminal_putc(&root_terminal, '>');
 
-    // while (1);
-    // crashes here
     terminal_print(&second_terminal, "Using VGA text mode \n");
     terminal_print(&second_terminal, ">PHYSICAL RAM STATS:\n");
     terminal_print(&second_terminal, "- [USABLE] ~");
@@ -84,8 +80,11 @@ void kmain(BiosBootInfo* boot_info) {
             "- Time Sensei\n"
             "\n");
     terminal_putc(&second_terminal, '>');
-
+    //PHYSMAP_BASE
     
+    u64 index = PML4_INDEX(PHYSMAP_BASE);
+    terminal_printDEC(&second_terminal, index);
+
     while (1) {
         tatami_poll(tatami->cmp_sensei);
 

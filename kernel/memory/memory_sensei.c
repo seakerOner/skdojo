@@ -1,15 +1,36 @@
 #include "memory_sensei.h"
 #include "kata.h"
+#include "kheap.h"
 
 MemorySensei memory_sensei = {0};
 
 PtTable heap_pts[PT_TABLES_FOR_KHEAP] __attribute__((aligned(PAGE_SIZE))) = {0};
 
-// called when the kernel heap already got all the memory it needed.
-// So we map the physical addresses to the p4ml table with the memory reserved for the kernel heap
-//
-// The kernel heap will be used to create PDPT/PT/PD tables in a dynamic matter after this function
-// returns to the caller
+PdptTable physmap_pdpt __attribute__((aligned(PAGE_SIZE))) = {0};
+PdTable physmap_pds[64] __attribute__((aligned(PAGE_SIZE))) = {0};     // 128GB max physical map
+
+u64 kheap_virt_to_phys(u64 virt) {
+    if (virt < KERNEL_HEAP_START || virt > (KERNEL_HEAP_START + KERNEL_HEAP_LEN))
+        return 0xDEDEDEDEDEDEDEDE;      // poison 
+
+    u64 entry = RECURSIVE_PT(
+            PML4_INDEX(virt), 
+            PDPT_INDEX(virt), 
+            PD_INDEX(virt)
+        )->entries[PT_INDEX(virt)];
+
+    return entry & ~0xFFF;
+}
+
+static inline void set_tables_physmap() {
+    RECURSIVE_PML4->entries[PML4_INDEX(PHYSMAP_BASE)] 
+        = (u64)&physmap_pdpt | PAGE_PRESENT | PAGE_WRITABLE;
+
+    for (u32 x = 0; x < 64; x++) 
+        RECURSIVE_PDPT(PML4_INDEX(PHYSMAP_BASE))->entries[x] = 
+            (u64)&physmap_pds[x] | PAGE_PRESENT | PAGE_WRITABLE;
+}
+
 static inline void _bootstrap_kheap(BiosBootInfo* boot_info, InternalMemSensei* memsensei) {
     u64 free_kernel_memory = 0;
 
@@ -29,16 +50,6 @@ static inline void _bootstrap_kheap(BiosBootInfo* boot_info, InternalMemSensei* 
         heap_pts[pt_number].entries[pt_entry_i] = 
             phys | PAGE_PRESENT | PAGE_WRITABLE; 
                              
-        // if (!(boot_info->pml4_table->entries[pml4_i] & 1)) {
-        //     // TODO: alloc new pdpt
-        // }
-        // if (!(boot_info->pdpt_table->entries[pdpt_i] & 1)) {
-        //     // TODO: alloc new pd
-        // }
-        // if (!(boot_info->pd_table->entries[pd_i] & 1)) {
-        //     // TODO: alloc new pt
-        // }
-
     }
     // add pages to the pd table
     u64 used_pts = (memsensei->kpage_index + PAGE_ENTRIES - 1) / PAGE_ENTRIES;
@@ -51,16 +62,15 @@ static inline void _bootstrap_kheap(BiosBootInfo* boot_info, InternalMemSensei* 
     }
     memory_sensei.kernel_info.heap_bytes_free = free_kernel_memory;
     memory_sensei.kernel_info.heap_bytes_cap  = free_kernel_memory;
-
-    // reload CR3 register to maintain TBL (Translation Lookaside Buffer) 
-    // coherence (in x86 architecture TLB coherence is not guaranteed when modifying table entries)
-    //
-    // The Translation Lookaside Buffer (TLB) is a specialized cache within the Memory Management Unit (MMU)
-    // of x86 processors that stores recent virtual-to-physical address translations to avoid the performance 
-    // penalty of walking page tables in main memory.
-    __asm__ __volatile__ ("mov %%cr3, %%rax; mov %%rax, %%cr3" ::: "rax", "memory");
-
 };
+
+void map_2MB_page(u64 virt, u64 phys) {
+    RECURSIVE_PD(PML4_INDEX(virt), PDPT_INDEX(virt))
+        ->entries[PD_INDEX(virt)] =
+            phys | PAGE_PRESENT | PAGE_WRITABLE | PAGE_PS;      // PAGE_PS = 2MB pages
+
+    invlpg(virt);
+}
 
 MemorySensei* create_memory_sensei(BiosBootInfo* boot_info) {
     memory_sensei.internal.pd_index          = 1; // first pd entry is already filled by the bootloader
@@ -69,7 +79,6 @@ MemorySensei* create_memory_sensei(BiosBootInfo* boot_info) {
     memory_sensei.kernel_info.heap_bytes_cap = KERNEL_HEAP_LEN;
     memory_sensei.kata                       = kata_init();
 
-    boolean kheap_bootstraped                = FALSE;
                                
     for(u64 x = 0; x < boot_info->boot_memmap_entries; x++) {
 
@@ -104,45 +113,70 @@ MemorySensei* create_memory_sensei(BiosBootInfo* boot_info) {
         }
     }
 
+    // we will map 14MB with 4KB granuality on PML4 for the KHEAP
+    // and for the PHYSMAP we use pages with 2MB granuality
+    boolean kheap_bootstraped    = FALSE;
     InternalMemSensei* memsensei = &memory_sensei.internal;
-    // store usable ram in pages for the kernel heap
+
     for(u64 x = 0; x < boot_info->boot_memmap_entries; x++) {
         if (boot_info->boot_memmap_addr[x].type != USABLE_RAM)
             continue;
 
-        u64 phy_addr    = boot_info->boot_memmap_addr[x].base_addr;
-        u64   phy_len   = boot_info->boot_memmap_addr[x].length;
+        u64 phy_addr     = boot_info->boot_memmap_addr[x].base_addr;
+        u64 phy_len      = boot_info->boot_memmap_addr[x].length;
+        u64 aligned_addr = phy_addr;
 
-        u64 aligned_addr = phy_addr & ~4095;    // align to 4kb
-        u64 aligned_len  = phy_len - (aligned_addr - phy_addr);
-        u64 num_v_pages = aligned_len / PAGE_SIZE;
+        if (!kheap_bootstraped) {
+            aligned_addr &= ~4095;    // align to 4kb
+            u64 aligned_len  = phy_len - (aligned_addr - phy_addr);
+            u64 num_v_pages  = aligned_len / PAGE_SIZE;
 
-        for (u64 v = 0; v < num_v_pages; v++) {
-            if (memsensei->kpage_index < memsensei->kpage_max)  {   // add to kheap
-                memsensei->kpages[memsensei->kpage_index++] = (u64)aligned_addr;
-            } else {   
-                // u64 addr = aligned_addr;
-                // u64 size = aligned_len; 
-                // kata_add_region(addr, size);
-                if (!kheap_bootstraped) {
+            for (u64 v = 0; v < num_v_pages; v++) {
+                if (memsensei->kpage_index < memsensei->kpage_max)  {   // add to kheap
+                    memsensei->kpages[memsensei->kpage_index++] = (u64)aligned_addr;
+                } else {   
                     _bootstrap_kheap(boot_info, memsensei);
+                    start_kheap(&memory_sensei);
+
+                    // set recursive paging
+                    boot_info->pml4_table->entries[PML4_RECURSIVE_SLOT] = 
+                        (u64)boot_info->pml4_table | PAGE_PRESENT | PAGE_WRITABLE;
+
+                    set_tables_physmap();
+
+                    reload_cr3();
+
+                    aligned_addr += PAGE_SIZE;     // next 4kb
+                                                   
                     kheap_bootstraped = TRUE;
-                } else {
-                    // TODO: use kheap to create PTPD/PT/PD entries for the rest of the available RAM
+                    // break;
+                    goto _start_phys_map;          // start mapping from where kheap stopped
                 }
-                break;
+                aligned_addr += PAGE_SIZE;     // next 4kb
             }
-            aligned_addr += PAGE_SIZE;     // next 4kb
+            continue;
+        }
+
+        _start_phys_map:    
+        ;
+        aligned_addr   &= ~(MB(2)-1);   // align to 2MB
+        u64 aligned_len = phy_len - (aligned_addr - phy_addr);
+        u64 end         = aligned_addr + aligned_len;
+
+        for (u64 addr = aligned_addr; addr < end; addr += MB(2)) {
+            u64 phys = addr;
+            u64 virt = PHYSMAP_BASE + phys;
+            map_2MB_page(virt, phys);
         }
     }
     
-    // reload CR3 register to maintain TBL (Translation Lookaside Buffer) 
+    // reload CR3 register to maintain TLB (Translation Lookaside Buffer) 
     // coherence (in x86 architecture TLB coherence is not guaranteed when modifying table entries)
     //
     // The Translation Lookaside Buffer (TLB) is a specialized cache within the Memory Management Unit (MMU)
     // of x86 processors that stores recent virtual-to-physical address translations to avoid the performance 
     // penalty of walking page tables in main memory.
-    __asm__ __volatile__ ("mov %%cr3, %%rax; mov %%rax, %%cr3" ::: "rax", "memory");
+    reload_cr3();
     return &memory_sensei;
 }
 

@@ -17,9 +17,6 @@ skdojo is a **dojo for computation**; a place to create, run, and explore progra
 
 skdojo is built around simplicity, control, and clarity.
 
-Instead of hiding hardware behind heavy abstractions, 
-it exposes it through structured, minimal interfaces.
-
 The goal is to create a system that is:
 
 - understandable
@@ -28,51 +25,6 @@ The goal is to create a system that is:
 - self-contained
 
 ---
-
-## Architecture
-
-skdojo follows a **modular, sensei-driven architecture**,
-where each subsystem is guided by a **Sensei** -
-a component responsible for managing and abstracting a specific domain.
-
-### Core Concepts
-
-#### Sensei (System Controllers)
-
-Senseis act as coordinators between the dojo (kernel) and hardware drivers.
-
-Examples:
-- `VideoSensei`     -> manages video output 
-- 'WManagerSensei'  -> manages window creation
-- 'KeyboardSensei'  -> manages keyboard events
-- **(planned)** `DiskSensei`, etc.
-
-They provide:
-- a stable interface to the kernel
-- driver selection and usage 
-- default system resources (e.g. framebuffer)
-
----
-
-#### Drivers (Hardware strategies)
-
-Drivers implement low-level interaction with the hardware.
-
-They follow a **function pointer interface** (Strategy pattern), allowing:
-- interchangeable implementations
-- hardware abstraction without branching logic
-
-Example:
-- VGA text mode driver
-
----
-
-#### Themes (Presentation Layer)
-
-DojoTheme provides:
-- color palettes
-- cursor style
-- visual semantics (error, success, highlight)
 
 ## Status
 
@@ -106,7 +58,6 @@ DojoTheme provides:
 ## In Progress
 
 - Further develop Bootloader and Kernel
-- Compositor system for multi-window rendering
 - Block-based system implementation
 - Dojo environment (REPL / interactive programming model)
 

@@ -141,6 +141,7 @@ rundebug: dojo.img
 		-drive file=./build/dojo.img,format=raw \
 		-net none -d int,cpu_reset \
 		-debugcon stdio \
+		-m 2G \
 		-global isa-debugcon.iobase=0xe9 \
 		-no-reboot 
 

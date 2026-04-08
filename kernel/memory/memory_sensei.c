@@ -147,7 +147,7 @@ MemorySensei* create_memory_sensei(BiosBootInfo* boot_info) {
                     reload_cr3();
 
                     aligned_addr += PAGE_SIZE;     // next 4kb
-                                                   
+
                     kheap_bootstraped = TRUE;
                     // break;
                     goto _start_phys_map;          // start mapping from where kheap stopped
@@ -177,6 +177,7 @@ MemorySensei* create_memory_sensei(BiosBootInfo* boot_info) {
     // of x86 processors that stores recent virtual-to-physical address translations to avoid the performance 
     // penalty of walking page tables in main memory.
     reload_cr3();
+
     return &memory_sensei;
 }
 

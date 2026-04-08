@@ -29,8 +29,8 @@ void kata_add_region(u64 addr, u64 size) {
 }
 
 void kata_add_block(KataAllocator* ka, u64 addr, u32 order) {
-    // KataBlock* block = (KataBlock*)addr;
-    //
-    // block->next = ka->free_lists[order];
-    // ka->free_lists[order] = block;
+    KataBlock* block = (KataBlock*)PA_TO_VA(addr);
+
+    block->next = ka->free_lists[order];
+    ka->free_lists[order] = block;
 }

@@ -2,6 +2,7 @@
 #include "./bios_boot_info.h"
 
 #include "interrupts/k_interrupts.h"
+#include "inttype.h"
 #include "terminal/terminal.h"
 #include "themes/themes.h"
 
@@ -80,10 +81,6 @@ void kmain(BiosBootInfo* boot_info) {
             "- Time Sensei\n"
             "\n");
     terminal_putc(&second_terminal, '>');
-    //PHYSMAP_BASE
-    
-    u64 index = PML4_INDEX(PHYSMAP_BASE);
-    terminal_printDEC(&second_terminal, index);
 
     while (1) {
         tatami_poll(tatami->cmp_sensei);

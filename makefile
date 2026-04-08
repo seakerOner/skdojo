@@ -134,7 +134,7 @@ kernel.bin: $(KERNEL_OBJS)
 # commands ---
 
 run: dojo.img
-	$(VM) -drive format=raw,if=ide,file=./build/dojo.img -net none 
+	$(VM) -drive format=raw,if=ide,file=./build/dojo.img -net none
 
 rundebug: dojo.img
 	$(VM) \

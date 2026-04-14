@@ -3,6 +3,8 @@
 ; GDT is a data structure used by the x86 arquiteture to define and manage memory segments
 ; It allows us to enable protected mode
 ;
+; When the bootloader enters in 64bit mode, we transition the gdt table to high memory!
+;
 ; NOTE:
 ;       This is the bare minimum implementation for a valid protected mode
 ;
@@ -10,22 +12,14 @@
 ;
 ; REF: https://wiki.osdev.org/Global_Descriptor_Table#Segment_Descriptor
 ;
-;
-; TODO:
-;       Decide if we want user land with DPL as such with user code/data
-;
-;       Decide to add TSS (Task state segments)
-;       used for:
-;           --> Interrupts
-;           --> Multitasking
-;           --> stack switching
-;
+align 16
+tss:
+    resb 104
 
 gdt_start:
 gdt_null: 
     dd 0
     dd 0
-
 gdt_code: 
     dw 0xFFFF
     dw 0x0
@@ -42,6 +36,15 @@ gdt_data:
     db 0x0              
 gdt_code64:
     dq 0x00AF9A000000FFFF
+gdt_tss:
+    dw 104 - 1 
+    dw 0
+    db 0
+    db 10001001b            ; TSS available
+    db 0
+    db 0
+    dd 0
+    dd 0
 gdt_end:
 
 gdt_descriptor:
@@ -51,17 +54,4 @@ dd (gdt_start + 0x10000)
 GDT_CODE_SEG equ gdt_code - gdt_start     ; 0x08
 GDT_DATA_SEG equ gdt_data - gdt_start     ; 0x10
 GDT_CODE64_SEG equ gdt_code64 - gdt_start ; 0x18
-
-; code -> base=0 limit=4GB executable readable
-; data -> base=0 limit=4GB writable
-
-; Flags descrition:
-;
-; 11001111b        
-;
-; 1 granularity (4KB pages)
-; 1 32-bit segment
-; 0 not long mode
-; 0 available
-; 1111 limit high
-
+GDT_TSS_SEG equ gdt_tss - gdt_start       ; 0x20

@@ -6,10 +6,11 @@ static inline unsigned char inb(unsigned short port) {
     return result;
 }
 
-volatile u64 ticks = 0;
+static volatile u64 ticks = 0;
 
 volatile u64* get_time_ticker() {
-    return &ticks;
+    volatile u64* ptr = &ticks;
+    return ptr;
 }
 
 // TIMER interrupt

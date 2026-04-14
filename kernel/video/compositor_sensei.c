@@ -2,7 +2,7 @@
 #include "video_sensei.h"
 #include "wmanager_sensei.h"
 
-CompositorSensei compositor_sensei = {0};
+static CompositorSensei compositor_sensei = {0};
 
 CompositorSensei* create_compositor_sensei(DojoWindow* window) {
 

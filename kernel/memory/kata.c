@@ -1,7 +1,7 @@
 #include "memory_sensei.h"
 #include "kata.h"
 
-KataAllocator kata_alloc = {0};
+static KataAllocator kata_alloc = {0};
 
 KataAllocator* kata_init() {
     kata_alloc.max_orders = MAX_ORDER;

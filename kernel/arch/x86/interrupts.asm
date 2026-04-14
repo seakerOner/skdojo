@@ -1,19 +1,26 @@
 bits 64
+default rel
 
 global init_interrupts_x86
 extern irq1_kernel_intrpt
 extern irq0_kernel_intrpt
 
+section .text
+
 %macro SET_IDT_ENTRY 2
-mov rax, %2 
+lea rax, [%2]
+
 mov word [%1], ax                   ; offset low
 mov word [%1 + 2], 0x18             ; selector  (GDT_CODE64_SEG = 0x18)
 mov byte [%1 + 4], 0    
 mov byte [%1 + 5], 10001110b        ; present + ring0 + interrupt gate
+
 shr rax, 16 
 mov word [%1 + 6], ax               ; offset high
+
 shr rax, 16
 mov dword [%1 + 8], eax
+
 mov dword [%1 + 12], 0
 %endmacro
 
@@ -43,6 +50,12 @@ init_interrupts_x86:
 
     call remap_pic
     ; ----
+    ; Double Fault 
+    ; SET_IDT_ENTRY idt_start + 8 * 16, isr_df
+    ; Page Fault
+    ; SET_IDT_ENTRY idt_start + 14 * 16, isr_pf
+    ; General protection 
+    ; SET_IDT_ENTRY idt_start + 13 * 16, isr_gp 
     ; set IRQ0 (32) TIMER TICK
     SET_IDT_ENTRY idt_start + 32 * 16, irq0_stub
     ; set IRQ1 (33) KEYBOARD DATA READY
@@ -70,6 +83,21 @@ init_interrupts_x86:
     pop rax
     ret
 
+; page fault
+isr_pf:
+    cli
+    hlt
+
+; general protection
+isr_gp:
+    cli
+    hlt
+
+; double fault
+isr_df:
+    cli 
+    hlt
+
 ; TIMER
 irq0_stub:
 push rax
@@ -87,7 +115,6 @@ push r12
 push r13
 push r14
 push r15
-
 
 call irq0_kernel_intrpt
 
@@ -109,7 +136,6 @@ pop rdx
 pop rcx
 pop rbx
 pop rax
-
 iretq
 
 ; KEYBOARD DATA READY
@@ -152,7 +178,6 @@ pop rbx
 pop rax
 
 iretq
-
 
 
 

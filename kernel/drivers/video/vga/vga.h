@@ -7,6 +7,7 @@
 #include "./vga_colors.h"
 #include "../../../themes/themes.h"
 #include "../../../inttype.h"
+#include "../../../memory/memory_sensei.h"
 
 typedef struct {
     volatile char* vga_base;

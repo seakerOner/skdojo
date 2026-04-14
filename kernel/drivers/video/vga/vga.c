@@ -1,6 +1,5 @@
 #include "vga.h"
 
-
 void vga_new_videobuffer(u32 start_row, u32 start_col, 
                             u32 max_collumns, u32 max_rows, 
                             vga_videobuffer* out_fb) {
@@ -11,7 +10,7 @@ void vga_new_videobuffer(u32 start_row, u32 start_col,
     v_buffer.max_collumns = max_collumns;
     v_buffer.max_rows = max_rows;
 
-    v_buffer.vga_base = (volatile char*)0xB8000;
+    v_buffer.vga_base = (volatile char*)0xB8000+HIGH_MEM_IDENTITY;
 
     *out_fb = v_buffer;
 }

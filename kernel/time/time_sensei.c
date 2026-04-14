@@ -1,6 +1,6 @@
 #include "time_sensei.h"
 
-TimeSensei time_sensei = {0};
+static TimeSensei time_sensei = {0};
 
 void start_time_sensei() {
     time_sensei.ticks = get_time_ticker();

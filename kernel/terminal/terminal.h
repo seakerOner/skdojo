@@ -48,7 +48,7 @@ typedef struct {
 DojoTerminal* terminal_new(CompWinFrame* frame, DojoTerminal* t);
 //DojoTerminal* terminal_new(CompWinFrame* frame);
 
-void terminal_print(DojoTerminal* terminal, char* string);
+void terminal_print(DojoTerminal* terminal, const char* string);
 void terminal_printDEC(DojoTerminal* terminal, u64 num);
 void terminal_putc(DojoTerminal* terminal, char c);
 

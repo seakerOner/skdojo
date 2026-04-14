@@ -1,8 +1,7 @@
 #include "../video/video_sensei.h"
 #include "../video/wmanager_sensei.h"
 
-DojoTheme dojo_theme;
-
+static DojoTheme dojo_theme;
 
 static inline void set_vga_theme() {
     dojo_theme.cursor = '_';

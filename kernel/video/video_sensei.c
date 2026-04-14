@@ -2,7 +2,7 @@
 
 #include "../printk/printk.h"
 
-VideoSensei video_sensei;
+static VideoSensei video_sensei;
 
 VideoSensei* create_video_sensei() {
     // TODO: Check VGA support via PCI

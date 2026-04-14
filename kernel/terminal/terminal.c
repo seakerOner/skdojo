@@ -85,7 +85,7 @@ DojoTerminal* terminal_new(CompWinFrame* frame, DojoTerminal* t) {
 
 
 void terminal_printDEC(DojoTerminal* terminal, u64 num) {
-    char buffer[32] = {0};
+    u8 buffer[32];
     int x = 0;
 
     if (num == 0) {
@@ -109,7 +109,7 @@ void terminal_printDEC(DojoTerminal* terminal, u64 num) {
 void terminal_putc(DojoTerminal *terminal, char c) {
     if (c == '\n') {
         terminal_newline(terminal);
-         terminal_history_add_c(&terminal->history, c);
+        terminal_history_add_c(&terminal->history, c);
         return;
     } 
 
@@ -133,7 +133,7 @@ void terminal_putc(DojoTerminal *terminal, char c) {
     terminal->input_buffer.input_start_col = terminal->cursor_col;
 }
 
-void terminal_print(DojoTerminal* terminal, char* string) {
+void terminal_print(DojoTerminal* terminal, const char* string) {
     while (*string) {
         terminal_putc(terminal, *string++);
     }

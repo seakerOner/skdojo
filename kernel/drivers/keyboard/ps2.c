@@ -4,7 +4,7 @@
 // PS/2 Scan Code Set 1 US layout
 //
 
-unsigned char ps2_scanmap[128] = 
+static unsigned char ps2_scanmap[128] = 
 {
     0, 27, '1','2','3','4','5','6','7','8','9','0','-','=', '\b',
     '\t',
@@ -20,7 +20,7 @@ unsigned char ps2_scanmap[128] =
     ' ',
 };
 
-unsigned char ps2_scanmap_shift[128] = 
+static unsigned char ps2_scanmap_shift[128] = 
 {
     0, 27, '!','@','#','$','%','^','&','*','(',')','_','+', '\b',
     '\t',
@@ -36,7 +36,7 @@ unsigned char ps2_scanmap_shift[128] =
     ' ',
 };
 
-KeyCode ps2_keymap_table[128] = {
+static KeyCode ps2_keymap_table[128] = {
     [0x01] = KEY_ESC,
 
     [0x02] = KEY_1,

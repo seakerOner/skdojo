@@ -1,28 +1,58 @@
 #ifndef MEMORY_SENSEI_H
 #define MEMORY_SENSEI_H
-
+/*
+ * MemorySensei bootstrap model (higher-half + identity bridge)
+ *
+ * This memory subsystem bootstraps paging using a temporary identity map
+ * while simultaneously constructing the kernel higher-half mapping.
+ *
+ * Core design principle:
+ * - Page tables are shared between identity-mapped VA and higher-half VA
+ *   during early boot, allowing a PIC kernel to safely configure memory
+ *   without relocation complexity.
+ *
+ * This creates a controlled dual-view of memory:
+ * - Low VA (identity map): used only during bootstrap
+ * - High VA (kernel): permanent execution environment
+ *
+ * Once initialization is complete:
+ * - Identity mapping is removed (security + invariants enforcement)
+ * - Recursive paging remains for page-table introspection
+ * - Full physical memory access is provided via PHYSMAP_BASE
+ *
+ * This avoids the need for a separate bootstrap memory allocator and
+ * keeps early paging setup minimal while maintaining full control.
+ */
 #include "../inttype.h"
 #include "kata.h"
 #include "../bios_boot_info.h"
 
-#define CONFIG_PHYSICAL_START 0x100000
+#define CONFIG_PHYSICAL_START 0x200000
 
 #define STAGE2BOOT_PHY_ADDR 0x10000
 #define KERNEL_PHY_ADDR     0x20000
 #define BOOT_INFO_ADDR      0x50000
-#define CPU_STACK           0x90000
+#define CPU_STACK           0x90000 
 
 #define PAGE_SIZE   (4 * 1024)
 #define PAGE_ENTRIES 512        
 
 // high memory addr where all physical RAM will be virtualized 
-#define PHYSMAP_BASE 0xFFFF800000000000ULL
+#define HIGH_MEM_IDENTITY  0xFFFFFF8000000000ULL
+#define KERNEL_BASE  HIGH_MEM_IDENTITY + KERNEL_PHY_ADDR
 
-#define KERNEL_HEAP_START   0x200000                 // 2MB (virtual address)
-#define KERNEL_HEAP_LEN  (0x01000000 - 0x00200000)   // bytes (14MB)
-                                                     
+#define IDENTITY_TO_HIGH(phys) ((phys) + HIGH_MEM_IDENTITY)
+#define HIGH_TO_IDENTITY(virt) ((virt) - HIGH_MEM_IDENTITY)
+
+#define PHYSMAP_BASE 0xFFFFFE8000000000
+
 #define PA_TO_VA(p) ((void*)(PHYSMAP_BASE + (p)))
 #define VA_TO_PA(p) ((void*)((p) - PHYSMAP_BASE))
+
+// address used to bootstrap, kernel must access this address with (HEAP + HIGH_MEM_IDENTITY)
+#define KERNEL_HEAP_START   0x200000
+#define KERNEL_HEAP_LEN  (0x01000000 - 0x00200000)   // bytes (14MB)
+                                                     
 
 #define KERNEL_HEAP_NUM_PAGES (KERNEL_HEAP_LEN / PAGE_SIZE)
 #define PT_TABLES_FOR_KHEAP ((KERNEL_HEAP_NUM_PAGES + PAGE_ENTRIES - 1) / PAGE_ENTRIES)
@@ -64,12 +94,6 @@
             ((u64)(pml4_i) << 30) |                                   \
             ((u64)(pdpt_i) << 21) |                                   \
             ((u64)(pd_i) << 12)))                                     \
-
-//
-// 0x00000000 - 0x00200000   -> identity (boot, kernel) 2MB
-// 0x00200000 - 0x01000000   -> kernel heap
-// 0x01000000 - ...          -> future uses...
-//
 
 #define PAGE_PRESENT         (1ULL << 0)
 #define PAGE_WRITABLE        (1ULL << 1)
@@ -115,9 +139,9 @@ typedef struct {
 
 typedef struct {
     u64 pd_index;
-    u64 kpages[KERNEL_HEAP_NUM_PAGES];
     u64 kpage_index;
     u64 kpage_max;
+    u64 kpages[KERNEL_HEAP_NUM_PAGES];
 } InternalMemSensei;
 
 typedef struct {
@@ -126,6 +150,17 @@ typedef struct {
     MemoryKernelInfo kernel_info;
     InternalMemSensei internal;
 }  MemorySensei;
+
+// since the Kernel is PIC, global variables use RIP relative addressing and since the kernel 
+// is in high VA memory we cant simply access ".bootstrap" section because it requires a relocation RIP + >2GB
+// which is illegal.
+// A work around is grabbing the "_bootstrap_start" symbol provided by the linker and aliase the structures we want.
+// This allows to bypass the compiler assumptions about RIP relative addressing
+typedef struct {
+    PtTable heap_pts[PT_TABLES_FOR_KHEAP];
+    PdptTable physmap_pdpt;
+    PdTable physmap_pds[128];     // 128GB max physical map
+} BootstrapLayout;
 
 MemorySensei* create_memory_sensei(BiosBootInfo* boot_info);
 MemorySensei* get_mem_sensei();

@@ -16,17 +16,14 @@
 #include "printk/printk.h"
 
 void kmain(BiosBootInfo* boot_info) {
-
     MemorySensei* sensei_mem = create_memory_sensei(boot_info);
-
     init_interrupts_x86();
+
     start_time_sensei();
     create_processes_sensei();
-
     VideoSensei* sensei_v = create_video_sensei();
 
     dojo_set_theme(THEME_DARKMODE);
-
     DojoTatami* tatami = tatami_start();
 
     CompWinFrame* root_win_frame = compositor_create_window_current_row(tatami->cmp_sensei);
@@ -71,7 +68,7 @@ void kmain(BiosBootInfo* boot_info) {
     terminal_print(&second_terminal, "- PAGES HANGED:     ");
     terminal_printDEC(&second_terminal, sensei_mem->kernel_info.heap_pages_hanged);
 
-    terminal_print(&second_terminal, "\n>Senseis activated:\n"
+    terminal_print(&second_terminal,"\n>Senseis activated:\n"
             "- Memory Sensei\n"
             "- Video Sensei\n"
             "- Window Manager Sensei\n"

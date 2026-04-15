@@ -1,7 +1,7 @@
 #include "vga_driver.h"
 #include "vga.h"
 
-u64  driver_vga_framebuffer_size() {
+u64 driver_vga_framebuffer_size() {
     return sizeof(vga_videobuffer);
 };
 

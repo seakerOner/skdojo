@@ -1,6 +1,6 @@
 #include "./keyboard_sensei.h"
 
-KeyboardSensei keyboard_sensei = {
+static KeyboardSensei keyboard_sensei = {
     .stack_capacity = MAX_KEYBOARD_EVENTS,
     .index = 0,
 };

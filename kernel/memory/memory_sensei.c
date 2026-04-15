@@ -2,16 +2,17 @@
 #include "kata.h"
 #include "kheap.h"
 
-MemorySensei memory_sensei = {0};
+static MemorySensei memory_sensei __attribute__((aligned(PAGE_SIZE), used)) = {0};
 
-PtTable heap_pts[PT_TABLES_FOR_KHEAP] __attribute__((aligned(PAGE_SIZE))) = {0};
-
-PdptTable physmap_pdpt __attribute__((aligned(PAGE_SIZE))) = {0};
-PdTable physmap_pds[64] __attribute__((aligned(PAGE_SIZE))) = {0};     // 128GB max physical map
+static inline BootstrapLayout* get_bootstrap() {
+    volatile u8* ptr;
+    ptr = (volatile u8*)MB(1); // bootstrap_start
+    return (BootstrapLayout*)ptr;
+}
 
 u64 kheap_virt_to_phys(u64 virt) {
     if (virt < KERNEL_HEAP_START || virt > (KERNEL_HEAP_START + KERNEL_HEAP_LEN))
-        return 0xDEDEDEDEDEDEDEDE;      // poison 
+        return POISON;      // poison 
 
     u64 entry = RECURSIVE_PT(
             PML4_INDEX(virt), 
@@ -23,15 +24,17 @@ u64 kheap_virt_to_phys(u64 virt) {
 }
 
 static inline void set_tables_physmap() {
+    BootstrapLayout* bootstrap = get_bootstrap();
     RECURSIVE_PML4->entries[PML4_INDEX(PHYSMAP_BASE)] 
-        = (u64)&physmap_pdpt | PAGE_PRESENT | PAGE_WRITABLE;
+        = (u64)&bootstrap->physmap_pdpt | PAGE_PRESENT | PAGE_WRITABLE;
 
     for (u32 x = 0; x < 64; x++) 
         RECURSIVE_PDPT(PML4_INDEX(PHYSMAP_BASE))->entries[x] = 
-            (u64)&physmap_pds[x] | PAGE_PRESENT | PAGE_WRITABLE;
+            (u64)&bootstrap->physmap_pds[x] | PAGE_PRESENT | PAGE_WRITABLE;
 }
 
 static inline void _bootstrap_kheap(BiosBootInfo* boot_info, InternalMemSensei* memsensei) {
+    BootstrapLayout* bootstrap = get_bootstrap();
     u64 free_kernel_memory = 0;
 
     // map physical memory on pd_tables (skdojo by default makes tables for 14MB)
@@ -47,17 +50,21 @@ static inline void _bootstrap_kheap(BiosBootInfo* boot_info, InternalMemSensei* 
         u64 pt_number     = pt_page_i / PAGE_ENTRIES;
         u64 pt_entry_i    = pt_page_i % PAGE_ENTRIES;
 
-        heap_pts[pt_number].entries[pt_entry_i] = 
+        bootstrap->heap_pts[pt_number].entries[pt_entry_i] = 
             phys | PAGE_PRESENT | PAGE_WRITABLE; 
                              
     }
+
     // add pages to the pd table
     u64 used_pts = (memsensei->kpage_index + PAGE_ENTRIES - 1) / PAGE_ENTRIES;
     for (u64 x = 0; x < used_pts; x++) {
         u64 virt = KERNEL_HEAP_START + (x * PAGE_SIZE * PAGE_ENTRIES);
         u64 pd_i = PD_INDEX(virt);
-        boot_info->pd_table->entries[pd_i] = 
-            ((u64)&heap_pts[x]) | PAGE_PRESENT | PAGE_WRITABLE;   
+        
+        // since identity map and kernel are mirroed placing these tables on low memory indexes 
+        // the kernel already has access to the kheap in high memory VA address space :D
+        boot_info->pd_table->entries[pd_i] = ((u64)&bootstrap->heap_pts[x]) | PAGE_PRESENT | PAGE_WRITABLE; 
+        
         memsensei->pd_index++;
     }
     memory_sensei.kernel_info.heap_bytes_free = free_kernel_memory;
@@ -73,12 +80,12 @@ void map_2MB_page(u64 virt, u64 phys) {
 }
 
 MemorySensei* create_memory_sensei(BiosBootInfo* boot_info) {
+
+    memory_sensei.kata                       = kata_init();
+    memory_sensei.internal.kpage_index       = 0;
     memory_sensei.internal.pd_index          = 1; // first pd entry is already filled by the bootloader
     memory_sensei.internal.kpage_max         = KERNEL_HEAP_NUM_PAGES;
-    memory_sensei.internal.kpage_index       = 0;
     memory_sensei.kernel_info.heap_bytes_cap = KERNEL_HEAP_LEN;
-    memory_sensei.kata                       = kata_init();
-
                                
     for(u64 x = 0; x < boot_info->boot_memmap_entries; x++) {
 
@@ -128,6 +135,9 @@ MemorySensei* create_memory_sensei(BiosBootInfo* boot_info) {
 
         if (!kheap_bootstraped) {
             aligned_addr &= ~4095;    // align to 4kb
+            if (aligned_addr < phy_addr)
+                aligned_addr += PAGE_SIZE;
+
             u64 aligned_len  = phy_len - (aligned_addr - phy_addr);
             u64 num_v_pages  = aligned_len / PAGE_SIZE;
 
@@ -135,21 +145,21 @@ MemorySensei* create_memory_sensei(BiosBootInfo* boot_info) {
                 if (memsensei->kpage_index < memsensei->kpage_max)  {   // add to kheap
                     memsensei->kpages[memsensei->kpage_index++] = (u64)aligned_addr;
                 } else {   
+
                     _bootstrap_kheap(boot_info, memsensei);
                     start_kheap(&memory_sensei);
 
                     // set recursive paging
                     boot_info->pml4_table->entries[PML4_RECURSIVE_SLOT] = 
                         (u64)boot_info->pml4_table | PAGE_PRESENT | PAGE_WRITABLE;
+                    reload_cr3();
 
                     set_tables_physmap();
-
                     reload_cr3();
 
                     aligned_addr += PAGE_SIZE;     // next 4kb
 
                     kheap_bootstraped = TRUE;
-                    // break;
                     goto _start_phys_map;          // start mapping from where kheap stopped
                 }
                 aligned_addr += PAGE_SIZE;     // next 4kb
@@ -169,6 +179,7 @@ MemorySensei* create_memory_sensei(BiosBootInfo* boot_info) {
             map_2MB_page(virt, phys);
         }
     }
+    boot_info->pml4_table->entries[0] = 0;        // remove identity map from pml4
     
     // reload CR3 register to maintain TLB (Translation Lookaside Buffer) 
     // coherence (in x86 architecture TLB coherence is not guaranteed when modifying table entries)

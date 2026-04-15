@@ -11,11 +11,10 @@
 ; NOTE:
 ;       This is the bare minimum implementation for a valid protected mode
 ;
-
+section .data
+align 16
 idt_start:
-
-TIMES 256 dq 0, 0   ; 16 bytes each for 64-bit mode
-
+    times 256 dq 0, 0 ; 16 bytes each for 64-bit mode
 idt_end:
 
 idt_descriptor:

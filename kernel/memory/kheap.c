@@ -1,7 +1,7 @@
 #include "kheap.h"
 #include "memory_sensei.h"
 
-KernelHeap k_heap = {0};
+static KernelHeap k_heap = {0};
 
 static inline u8 bitmap_get(u64 page) {
     return (k_heap.bitmap[page/8] >> (page%8)) & 1;
@@ -93,7 +93,7 @@ static int _find_realloc_pages_free(u64 ptr_idx, u64 old_num_pages, u64 num_page
 }
 
 void start_kheap(MemorySensei* mem_sensei) {
-    k_heap.base             = (u8*)KERNEL_HEAP_START;     // virtual memory address
+    k_heap.base             = (u8*)(KERNEL_HEAP_START+HIGH_MEM_IDENTITY);     // virtual memory address
     k_heap.capacity         = mem_sensei->internal.kpage_index;
     k_heap.page_size        = KB(4);
     k_heap.index            = 0;

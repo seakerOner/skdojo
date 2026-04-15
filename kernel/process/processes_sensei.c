@@ -1,6 +1,6 @@
 #include "processes_sensei.h"
 
-ProcessesSensei processes_sensei = {0};
+static ProcessesSensei processes_sensei = {0};
 
 void create_processes_sensei() {
     processes_sensei.capacity = MAX_PROCESSES;

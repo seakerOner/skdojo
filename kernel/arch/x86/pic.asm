@@ -5,6 +5,7 @@
 ; IRQs must start at 32+
 
 bits 64 
+section .text
 
 ; MASTER PIC -> 0x20 (command), 0x21 (data)
 ; SLAVE  PIC -> 0xA0 (command), 0xA1 (data)

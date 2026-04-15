@@ -1,6 +1,6 @@
 #include "./wmanager_sensei.h"
 
-WManagerSensei wmanager_sensei;
+static WManagerSensei wmanager_sensei;
 
 void create_wmanager_sensei() {
     wmanager_sensei.focused = 0;
@@ -39,7 +39,7 @@ DojoWindow* wmanager_get_focused() {
 DojoWindow* wmanager_get_window(u32 id) {
     if (id >= MAX_WINDOWS) {
         printk_warn("[Window Sensei ERROR] Out of bounds get_window()\n");
-        return (void *)0;
+        return NULL;
     }
     return &wmanager_sensei.windows[id];
 }

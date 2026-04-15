@@ -1,6 +1,6 @@
 #include "tatami.h"
 
-DojoTatami dojotatami = {0};
+static DojoTatami dojotatami = {0};
 
 DojoTatami* tatami_start() {
     VideoSensei* sensei_v    = get_video_sensei();

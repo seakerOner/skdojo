@@ -34,5 +34,7 @@ typedef u8                 boolean;
 #define MB(n) (n * (1024 * 1024))
 #define GB(n) (n * (1024 * 1024 * 1024))
 
+#define POISON 0xDEDEDEDEDEDEDEDE
+
 
 #endif

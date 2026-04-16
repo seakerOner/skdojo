@@ -403,6 +403,8 @@ void terminal_destroy(void* terminal) {
     t->history.data          = NULL;
     t->history.line_capacity = 0;
     t->history.c_count       = 0;
+    terminal_toggle_cursor(t);
+    comp_clear(t->frame, dojo_get_theme()->palette.main_colors);
 }
 
 void terminal_render(void* term) {

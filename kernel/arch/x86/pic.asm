@@ -37,8 +37,8 @@ out 0xA1, al
 mov al, 00110110b
 out 0x43, al 
 
-; PIT base clock / 800 = freq ==> PIT base clock / freq = Hz ==> 1 / Hz = tick_s  ~800Hz (1 tick = ~1.25ms)
-mov ax, 1193182 / 800
+; PIT base clock / 1000 = freq ==> PIT base clock / freq = Hz ==> 1 / Hz = tick_s  ~800Hz (1 tick = ~1ms)
+mov ax, 1193182 / 1000 
 out 0x40, al    ; low byte 
 mov al, ah 
 out 0x40, al    ; hight byte

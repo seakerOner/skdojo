@@ -44,10 +44,10 @@ static int _find_realloc_pages_free(u64 ptr_idx, u64 old_num_pages, u64 num_page
         if (!bitmap_get(x)) {
             count++;
 
-            if (count == extra_pages)
+            if (count == (u64)extra_pages)
                 return ptr_idx;     // there is enough space to simply increase the size without base reallocation
         } else {
-            if (count < extra_pages)
+            if (count < (u64)extra_pages)
                 break;
         }
     }
@@ -142,13 +142,13 @@ void* kheap_resize(void* ptr, u64 old_num_pages, u64 num_pages) {
 
     u64 abs_idx = ((u64)ptr - (u64)k_heap.base) / k_heap.page_size;
 
-    u64 res = _find_realloc_pages_free(abs_idx, old_num_pages, num_pages);
+    int res = _find_realloc_pages_free(abs_idx, old_num_pages, num_pages);
 
     if (res < 0)
         return NULL;
 
 
-    for (u64 x = 0; x < num_pages; x++)
+    for (u64 x = 0; x < (u64)num_pages; x++)
         bitmap_set(res + x);
 
     get_mem_sensei()->kernel_info.heap_bytes_used += ((num_pages * k_heap.page_size) 

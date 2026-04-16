@@ -19,10 +19,10 @@ typedef struct {
     char ver_border_c;
     char bot_border_c;
 
-    char top_l_corner_c;     
-    char top_r_corner_c;     
-    char bot_r_corner_c;     
-    char bot_l_corner_c;     
+    char top_l_corner_c;
+    char top_r_corner_c;
+    char bot_r_corner_c;
+    char bot_l_corner_c;
 } CompWinBorder;
 
 typedef struct {
@@ -68,13 +68,14 @@ typedef struct {
     CompWinBorder   win_border[MAX_WINDOWS];
     CompWinFrame    win_frame[MAX_WINDOWS];
     CompGridNode    nodes[MAX_WINDOWS];
+    u32             alive_nodes[MAX_WINDOWS];
     CompGrid        grid;
 } CompositorSensei;
 
 CompositorSensei* create_compositor_sensei(DojoWindow* window);
 
-CompWinFrame* compositor_create_window_current_row(CompositorSensei* c_sensei);
-CompWinFrame* compositor_create_window_new_row(CompositorSensei* c_sensei);
+CompWinFrame* compositor_create_frame_current_row(CompositorSensei* c_sensei);
+CompWinFrame* compositor_create_frame_new_row(CompositorSensei* c_sensei);
 
 void comp_update_grid(CompositorSensei* c_sensei);
 
@@ -86,6 +87,7 @@ void compositor_focus_left(CompositorSensei* c_sensei);
 void compositor_focus_right(CompositorSensei* c_sensei);
 
 CompWinFrame* compositor_get_focused_frame(CompositorSensei* c_sensei);
+void          compositor_destroy_focused_frame(CompositorSensei* c_sensei);
 
 // 1 -> polled | 0 ->ignored
 u32 compositor_poll(CompositorSensei* c_sensei, KeyEvent* ev);

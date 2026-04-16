@@ -26,8 +26,8 @@ void kmain(BiosBootInfo* boot_info) {
     dojo_set_theme(THEME_DARKMODE);
     DojoTatami* tatami = tatami_start();
 
-    CompWinFrame* root_win_frame = compositor_create_window_current_row(tatami->cmp_sensei);
-    CompWinFrame* second_win_frame = compositor_create_window_current_row(tatami->cmp_sensei);
+    CompWinFrame* root_win_frame = compositor_create_frame_current_row(tatami->cmp_sensei);
+    CompWinFrame* second_win_frame = compositor_create_frame_current_row(tatami->cmp_sensei);
 
     if (!root_win_frame || !second_win_frame)
         while (1);  // hang

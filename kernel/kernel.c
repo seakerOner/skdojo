@@ -68,6 +68,7 @@ void kmain(BiosBootInfo* boot_info) {
     terminal_print(&second_terminal, "- PAGES HANGED:     ");
     terminal_printDEC(&second_terminal, sensei_mem->kernel_info.heap_pages_hanged);
 
+
     terminal_print(&second_terminal,"\n>Senseis activated:\n"
             "- Memory Sensei\n"
             "- Video Sensei\n"
@@ -79,6 +80,7 @@ void kmain(BiosBootInfo* boot_info) {
             "\n");
     terminal_putc(&second_terminal, '>');
 
+    // TODO: second console is crashing when adding to history
     while (1) {
         tatami_poll(tatami->cmp_sensei);
 

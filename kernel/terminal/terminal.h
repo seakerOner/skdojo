@@ -13,7 +13,7 @@
 
 typedef struct {
     char* data;
-    u32 c_count;
+    u64 c_count;
     u32 line_capacity;
     u32 line_len;
     u32 scroll_offset;

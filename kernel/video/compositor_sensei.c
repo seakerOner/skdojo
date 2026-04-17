@@ -94,12 +94,11 @@ static inline void _shift_curr_cols_left(CompositorSensei* c_sensei, u32 insert_
     }
     u32 last_col = cols - 1;
 
-    for (u32 l = 0; l < c_sensei->grid.curr_layers[row][last_col]; l++) 
+    for (u32 l = 0; l < CS_GRID_LAYERS; l++) 
         c_sensei->grid.data[row][last_col][l] = 0;
 
     c_sensei->grid.curr_layers[row][last_col] = 0;
 
-    c_sensei->grid.curr_layers[row][insert_col] = 0;
     comp_update_grid(c_sensei);
 }
 
@@ -139,7 +138,7 @@ static inline void _shift_compact_rows_after_focds_row(CompositorSensei* c_sense
     u32 last_row =  c_sensei->grid.curr_max_rows - 1;
 
     for (u32 c = 0; c < c_sensei->grid.curr_cols_in_row[last_row]; c++) {
-        for (u32 l = 0; l < c_sensei->grid.curr_layers[last_row][c]; l++)
+        for (u32 l = 0; l < CS_GRID_LAYERS; l++)
             c_sensei->grid.data[last_row][c][l] = 0;
 
         c_sensei->grid.curr_layers[last_row][c] = 0;
@@ -431,10 +430,9 @@ void comp_update_grid(CompositorSensei* c_sensei) {
         frame->width          = abs_width  - 2;
         frame->height         = abs_height - 2;
 
+        comp_clear(frame, dojo_get_theme()->palette.main_colors); // ensure no artifacts
         if (frame->process && frame->process->on_resize)
             frame->process->on_resize(frame->process->app_data, frame->width, frame->height);
-        else 
-            comp_clear(frame, dojo_get_theme()->palette.main_colors); // when no app is on window and to clear trash 
     }
 
 }
@@ -503,20 +501,15 @@ void compositor_destroy_focused_frame(CompositorSensei *c_sensei) {
         return;
 
     FocusedNode  fn     = c_sensei->focused_node;
-    CompGridNode fnode  = c_sensei->nodes[fn.frame_id];
     CompWinFrame* fframe = &c_sensei->win_frame[fn.frame_id];
     u32 frame_id        = fn.frame_id;
 
     comp_clean_borders(c_sensei);
+    comp_clear(fframe, dojo_get_theme()->palette.main_colors);
 
     // let process terminate inside frame 
     if (fframe->process && fframe->process->on_destroy)
         fframe->process->on_destroy(fframe->process->app_data);
-
-    u32 row   = fnode.row;
-    u32 col   = fnode.col;
-    u32 layer = fnode.id;
-
 
     if (c_sensei->grid.curr_cols_in_row[fn.row] > 1) {  // remove a col in the current row
         _shift_curr_cols_left(c_sensei, fn.col);
@@ -526,14 +519,7 @@ void compositor_destroy_focused_frame(CompositorSensei *c_sensei) {
         c_sensei->grid.curr_max_rows--;
     }
 
-    // all layers in frame become invalid
-    for (u32 l = 0; l < CS_GRID_LAYERS; l++) 
-        c_sensei->grid.data[row][col][l] = 0;
-
-    c_sensei->grid.curr_layers[row][col] = 0;
-
-    c_sensei->grid.data[row][col][layer] = 0;
-    c_sensei->alive_nodes[frame_id]                    = FALSE;
+    c_sensei->alive_nodes[frame_id] = FALSE;
 
     c_sensei->frame_count--;
 
@@ -548,7 +534,6 @@ void compositor_destroy_focused_frame(CompositorSensei *c_sensei) {
         }
 
     compositor_focus_frame(c_sensei, new_focus);
-
     comp_update_grid(c_sensei);
     comp_draw_borders(c_sensei);
 }

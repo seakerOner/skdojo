@@ -32,6 +32,10 @@ static void terminal_history_add_c(TerminalHistory* h, char c) {
 DojoTerminal* terminal_new(CompWinFrame* frame, DojoTerminal* t) {
     if (!t) return NULL;
 
+    DojoProcess* p = processes_sensei_new_handle();
+    if (p == NULL) {
+        return NULL;
+    }
     *t = (DojoTerminal){0};
 
     const DojoTheme* theme = dojo_get_theme();
@@ -46,14 +50,9 @@ DojoTerminal* terminal_new(CompWinFrame* frame, DojoTerminal* t) {
     if (!t->history.data)
         return NULL;
 
-    DojoProcess* p = processes_sensei_new_handle();
-    if (p == NULL) {
-        return NULL;
-    }
 
     t->frame                        = frame;
     t->frame->process               = p;
-
 
     t->frame->process->state        = PROCESS_RUNNING;
     t->frame->process->app_data     = t;
@@ -123,11 +122,11 @@ void terminal_putc(DojoTerminal *terminal, char c) {
 
     const DojoTheme* theme = dojo_get_theme();
 
-     terminal_history_add_c(&terminal->history, c);
     comp_draw_cell(terminal->frame, terminal->cursor_row, 
                                 terminal->cursor_col, c, theme->palette.main_colors);
 
     terminal->cursor_col++;
+    terminal_history_add_c(&terminal->history, c);
 
     terminal->input_buffer.input_start_row = terminal->cursor_row;
     terminal->input_buffer.input_start_col = terminal->cursor_col;
@@ -207,7 +206,10 @@ static void terminal_redraw_buffer(DojoTerminal* t) {
 
         while (row >= t->frame->height) {
             terminal_scroll(t);
-            t->input_buffer.input_start_row--;
+
+            if (t->input_buffer.input_start_row > 0)
+                t->input_buffer.input_start_row--;
+
             row--;
         }
 
@@ -285,7 +287,7 @@ static inline void terminal_cursor_move_front(DojoTerminal* terminal) {
 
     terminal->input_buffer.cursor++;
 
-    if (terminal->cursor_col == terminal->frame->width) {
+    if (terminal->cursor_col >= terminal->frame->width) {
         terminal->cursor_row++;
         terminal->cursor_col = 0;
         return;
@@ -353,12 +355,10 @@ void terminal_event(void* t, KeyEvent* ev){
 
 void terminal_on_resize(void* app, u32 w, u32 h) {
     DojoTerminal* t = app;
-    UNUSED(w);
-    UNUSED(h);
-    // if (t->cursor_row >= h)
-    //     t->cursor_row = h - 1;
-    // if (t->cursor_col >= w)
-    //     t->cursor_col = w - 1;
+    if (t->cursor_row >= h)
+        t->cursor_row = h ? h - 1 : 0;
+    if (t->cursor_col >= w)
+        t->cursor_col = w ? w - 1 : 0;
     
     terminal_render(t);
 }

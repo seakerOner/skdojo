@@ -17,7 +17,7 @@ static int _find_free_pages(u64 num_pages) {
     u64 count = 0;
     u64 start = 0;
 
-    for (u64 x = k_heap.first_free_index; x < k_heap.index; x++) {
+    for (u64 x = k_heap.first_free_index; x < k_heap.capacity; x++) {
         if (!bitmap_get(x)) {
             if (count == 0)
                 start = x;
@@ -44,8 +44,9 @@ static int _find_realloc_pages_free(u64 ptr_idx, u64 old_num_pages, u64 num_page
         if (!bitmap_get(x)) {
             count++;
 
+            // there is enough space to simply increase the size without base reallocation
             if (count == (u64)extra_pages)
-                return ptr_idx;     // there is enough space to simply increase the size without base reallocation
+                return ptr_idx;    
         } else {
             if (count < (u64)extra_pages)
                 break;
@@ -93,7 +94,8 @@ static int _find_realloc_pages_free(u64 ptr_idx, u64 old_num_pages, u64 num_page
 }
 
 void start_kheap(MemorySensei* mem_sensei) {
-    k_heap.base             = (u8*)(KERNEL_HEAP_START+HIGH_MEM_IDENTITY);     // virtual memory address
+    // virtual memory address
+    k_heap.base             = (u8*)(KERNEL_HEAP_START+HIGH_MEM_IDENTITY);     
     k_heap.capacity         = mem_sensei->internal.kpage_index;
     k_heap.page_size        = KB(4);
     k_heap.index            = 0;
@@ -106,31 +108,33 @@ void start_kheap(MemorySensei* mem_sensei) {
 
 // returns NULL on failure
 void* kheap_reserve(u64 num_pages) {
-    u64 abs_idx = k_heap.index * k_heap.page_size;
+    //u64 abs_idx = k_heap.index * k_heap.page_size;
 
-    if (k_heap.index + num_pages <= k_heap.capacity) {
-        void* alloced_space = (void *)&k_heap.base[abs_idx];
-
-        for(u64 x = 0; x < num_pages; x++)
-            bitmap_set(k_heap.index+x);
-
-        k_heap.index += num_pages;
-        get_mem_sensei()->kernel_info.heap_bytes_used += (num_pages * k_heap.page_size);
-        get_mem_sensei()->kernel_info.heap_bytes_free -= (num_pages * k_heap.page_size);
-        return alloced_space;
-    }
+    // if (k_heap.index + num_pages <= k_heap.capacity) {
+    //     void* alloced_space = (void *)&k_heap.base[abs_idx];
+    //
+    //     for(u64 x = 0; x < num_pages; x++)
+    //         bitmap_set(k_heap.index+x);
+    //
+    //     k_heap.index += num_pages;
+    //     get_mem_sensei()->kernel_info.heap_bytes_used += (num_pages * k_heap.page_size);
+    //     get_mem_sensei()->kernel_info.heap_bytes_free -= (num_pages * k_heap.page_size);
+    //     return alloced_space;
+    // }
 
     int start = _find_free_pages(num_pages);
     if (start < 0)
         return NULL;
 
+
     for (u64 x = 0; x < num_pages; x++)
         bitmap_set(start + x);
 
+    k_heap.index += num_pages;
     get_mem_sensei()->kernel_info.heap_bytes_used += (num_pages * k_heap.page_size);
     get_mem_sensei()->kernel_info.heap_bytes_free -= (num_pages * k_heap.page_size);
 
-    return (void *)((u8 *)k_heap.base + (start * k_heap.page_size));
+    return (void *)((u8 *)(k_heap.base + (start * k_heap.page_size)));
 };
 
 void* kheap_resize(void* ptr, u64 old_num_pages, u64 num_pages) {
@@ -147,7 +151,6 @@ void* kheap_resize(void* ptr, u64 old_num_pages, u64 num_pages) {
     if (res < 0)
         return NULL;
 
-
     for (u64 x = 0; x < (u64)num_pages; x++)
         bitmap_set(res + x);
 
@@ -156,7 +159,7 @@ void* kheap_resize(void* ptr, u64 old_num_pages, u64 num_pages) {
     get_mem_sensei()->kernel_info.heap_bytes_free -= ((num_pages * k_heap.page_size)
                                                         - (old_num_pages * k_heap.page_size));
 
-    return (void *)((u8*)k_heap.base + (res * k_heap.page_size));
+    return (void *)((u8*)(k_heap.base + (res * k_heap.page_size)));
 };
 
 u32 kheap_free(void* ptr, u64 num_pages) {
@@ -166,7 +169,7 @@ u32 kheap_free(void* ptr, u64 num_pages) {
             (u64)ptr < (u64)k_heap.base)
         return 0;
 
-    u64 abs_idx = ((u64)ptr - (u64)k_heap.base) / k_heap.page_size;
+    u64 abs_idx = (((u64)ptr) - (u64)k_heap.base) / k_heap.page_size;
 
     if (abs_idx < k_heap.first_free_index)
         k_heap.first_free_index = abs_idx;

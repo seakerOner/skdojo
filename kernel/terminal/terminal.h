@@ -16,6 +16,7 @@ typedef struct {
     u64 c_count;
     u32 line_capacity;
     u32 line_len;
+    u64 alloced_pages;
     u32 scroll_offset;
 } TerminalHistory;
 

@@ -25,7 +25,8 @@ void terminal_toggle_cursor(DojoTerminal* terminal) {
 }
 
 static void terminal_history_add_c(TerminalHistory* h, char c) {
-    u32 abs_idx = h->c_count++ % (h->line_len * h->line_capacity);
+    u64 max = (u64)h->line_len * (u64)h->line_capacity;
+    u64 abs_idx = h->c_count++ % max;
     h->data[abs_idx] = c;
 }
 
@@ -44,12 +45,14 @@ DojoTerminal* terminal_new(CompWinFrame* frame, DojoTerminal* t) {
     t->history.c_count        = 0;
     t->history.line_len       = TERMINAL_BUFFER_LEN;
     // TODO: use heap space not from the kernel heap itself
-    t->history.data           = (char*)kheap_reserve(
-                                CEIL_PAGES(t->history.line_capacity * t->history.line_len, 
-                                            KB(4)));
+    u64 size  = t->history.line_capacity * t->history.line_len;
+    u64 pages = CEIL_PAGES(size, KB(4));
+    t->history.alloced_pages = pages;
+    t->history.data = kheap_reserve(pages);
     if (!t->history.data)
         return NULL;
 
+    //FILL(t->history.data, 0, pages * KB(4));
 
     t->frame                        = frame;
     t->frame->process               = p;
@@ -363,16 +366,16 @@ void terminal_on_resize(void* app, u32 w, u32 h) {
     terminal_render(t);
 }
 
-static inline u32 _terminal_get_history_start(DojoTerminal* t) {
-    u32 max     = t->history.line_capacity * t->history.line_len;
-    u32 count   = t->history.c_count;
+static inline u64 _terminal_get_history_start(DojoTerminal* t) {
+    u64 max     = t->history.alloced_pages * KB(4);
+    u64 count   = t->history.c_count;
     u32 row     = 0;
     u32 col     = 0;
 
     if (count == 0)
         return 0;
 
-    u32 x = count;
+    u64 x = count;
     
     while (x > 0) {
         x--;
@@ -399,7 +402,7 @@ static inline u32 _terminal_get_history_start(DojoTerminal* t) {
 
 void terminal_destroy(void* terminal) {
     DojoTerminal* t = (DojoTerminal*)terminal;
-    kheap_free(t->history.data, CEIL_PAGES(t->history.line_capacity * t->history.line_len, KB(4)));
+    kheap_free(t->history.data, t->history.alloced_pages);
     t->history.data          = NULL;
     t->history.line_capacity = 0;
     t->history.c_count       = 0;
@@ -414,13 +417,13 @@ void terminal_render(void* term) {
     StyleColor colors = dojo_get_theme()->palette.main_colors;
     u32 row   = 0;
     u32 col   = 0;
-    u32 max   = t->history.line_capacity * t->history.line_len;
+    u64 max   = (u64)(t->history.line_capacity * t->history.line_len);
 
-    u32 start = _terminal_get_history_start(t);
+    u64 start = _terminal_get_history_start(t);
 
     // draw history
-    for (u32 i = start; i < t->history.c_count; i++) {
-        u32 idx = i % max;
+    for (u64 i = start; i < t->history.c_count; i++) {
+        u64 idx = i % max;
         char c  = t->history.data[idx];
 
         if (c == '\n') {

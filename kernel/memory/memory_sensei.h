@@ -157,9 +157,9 @@ typedef struct {
 // A work around is grabbing the "_bootstrap_start" symbol provided by the linker and aliase the structures we want.
 // This allows to bypass the compiler assumptions about RIP relative addressing
 typedef struct {
-    PtTable heap_pts[PT_TABLES_FOR_KHEAP];
-    PdptTable physmap_pdpt;
-    PdTable physmap_pds[128];     // 128GB max physical map
+    PtTable __attribute__((aligned(KB(4)))) heap_pts[PT_TABLES_FOR_KHEAP];
+    PdptTable __attribute__((aligned(KB(4)))) physmap_pdpt;
+    PdTable __attribute__((aligned(KB(4)))) physmap_pds[128];     // 128GB max physical map
 } BootstrapLayout;
 
 MemorySensei* create_memory_sensei(BiosBootInfo* boot_info);

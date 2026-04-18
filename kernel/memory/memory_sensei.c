@@ -28,13 +28,14 @@ static inline void set_tables_physmap() {
     RECURSIVE_PML4->entries[PML4_INDEX(PHYSMAP_BASE)] 
         = (u64)&bootstrap->physmap_pdpt | PAGE_PRESENT | PAGE_WRITABLE;
 
-    for (u32 x = 0; x < 64; x++) 
+    for (u32 x = 0; x < 128; x++) 
         RECURSIVE_PDPT(PML4_INDEX(PHYSMAP_BASE))->entries[x] = 
             (u64)&bootstrap->physmap_pds[x] | PAGE_PRESENT | PAGE_WRITABLE;
 }
 
 static inline void _bootstrap_kheap(BiosBootInfo* boot_info, InternalMemSensei* memsensei) {
     BootstrapLayout* bootstrap = get_bootstrap();
+    FILL(bootstrap, 0, sizeof(BootstrapLayout));
     u64 free_kernel_memory = 0;
 
     // map physical memory on pd_tables (skdojo by default makes tables for 14MB)
@@ -160,7 +161,8 @@ MemorySensei* create_memory_sensei(BiosBootInfo* boot_info) {
                     aligned_addr += PAGE_SIZE;     // next 4kb
 
                     kheap_bootstraped = TRUE;
-                    goto _start_phys_map;          // start mapping from where kheap stopped
+                    break;
+                    //goto _start_phys_map;          // start mapping from where kheap stopped
                 }
                 aligned_addr += PAGE_SIZE;     // next 4kb
             }

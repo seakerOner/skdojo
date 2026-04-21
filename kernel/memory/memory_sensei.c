@@ -4,7 +4,7 @@
 
 static MemorySensei memory_sensei __attribute__((aligned(PAGE_SIZE), used)) = {0};
 
-static inline BootstrapLayout* get_bootstrap() {
+BootstrapLayout* get_bootstrap() {
     volatile u8* ptr;
     ptr = (volatile u8*)MB(1); // bootstrap_start
     return (BootstrapLayout*)ptr;
@@ -82,7 +82,6 @@ void map_2MB_page(u64 virt, u64 phys) {
 
 MemorySensei* create_memory_sensei(BiosBootInfo* boot_info) {
 
-    memory_sensei.kata                       = kata_init();
     memory_sensei.internal.kpage_index       = 0;
     memory_sensei.internal.pd_index          = 1; // first pd entry is already filled by the bootloader
     memory_sensei.internal.kpage_max         = KERNEL_HEAP_NUM_PAGES;
@@ -161,8 +160,7 @@ MemorySensei* create_memory_sensei(BiosBootInfo* boot_info) {
                     aligned_addr += PAGE_SIZE;     // next 4kb
 
                     kheap_bootstraped = TRUE;
-                    break;
-                    //goto _start_phys_map;          // start mapping from where kheap stopped
+                    goto _start_phys_map;          // start mapping from where kheap stopped
                 }
                 aligned_addr += PAGE_SIZE;     // next 4kb
             }
@@ -190,6 +188,9 @@ MemorySensei* create_memory_sensei(BiosBootInfo* boot_info) {
     // of x86 processors that stores recent virtual-to-physical address translations to avoid the performance 
     // penalty of walking page tables in main memory.
     reload_cr3();
+
+    memory_sensei.kata = kata_init();
+    kata_populate_regions(boot_info);
 
     return &memory_sensei;
 }

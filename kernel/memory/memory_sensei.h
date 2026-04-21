@@ -167,6 +167,8 @@ MemorySensei* get_mem_sensei();
 
 void map_2MB_page(u64 virt, u64 phys);
 
+BootstrapLayout* get_bootstrap();
+
 static inline void reload_cr3() {
     __asm__ __volatile__ ("mov %%cr3, %%rax; mov %%rax, %%cr3" ::: "rax", "memory");
 }

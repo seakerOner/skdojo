@@ -4,6 +4,7 @@
 // Kata: A physical memory allocator inspired by the Buddy System used by Linux
 
 #include "../inttype.h"
+#include "../bios_boot_info.h"
 #define MAX_ORDER 25
 
 #define POW2(x) (1 << x)
@@ -19,8 +20,9 @@ typedef struct {
 
 KataAllocator* kata_init();
 
-void kata_add_region(u64 addr, u64 size);
+void kata_populate_regions(BiosBootInfo* bios_boot_info);
 
+void kata_add_region(u64 addr, u64 size);
 void kata_add_block(KataAllocator* ka, u64 addr, u32 order);
 
 #endif

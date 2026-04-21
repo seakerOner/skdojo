@@ -1,4 +1,3 @@
-
 #include "./bios_boot_info.h"
 
 #include "interrupts/k_interrupts.h"
@@ -23,15 +22,17 @@ void kmain(BiosBootInfo* boot_info) {
     create_processes_sensei();
     VideoSensei* sensei_v = create_video_sensei();
 
-    dojo_set_theme(THEME_DARKMODE);
-    DojoTatami* tatami = tatami_start();
-
     // HACK: kheap pages ~64 - 76 are invalid in HIGH VA...
     // ROOT CAUSE: probably paging structure mismatch (PD/PT not shared across PML4 slots, I suppose).
     // TEMP FIX: skip pages
     // FUTURE: remove kheap -> physmap allocator
     kheap_reserve(76);
 
+
+    // everything below this line must be modularized
+
+    dojo_set_theme(THEME_DARKMODE);
+    DojoTatami* tatami = tatami_start();
     CompWinFrame* root_win_frame = compositor_create_frame_current_row(tatami->cmp_sensei);
     CompWinFrame* second_win_frame = compositor_create_frame_current_row(tatami->cmp_sensei);
 

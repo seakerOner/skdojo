@@ -8,6 +8,10 @@ KataAllocator* kata_init() {
     return &kata_alloc;
 } 
 
+
+void kata_populate_regions(BiosBootInfo* bios_boot_info) {
+}
+
 void kata_add_region(u64 addr, u64 size) {
     while (size > 0) {
         u32 order = MAX_ORDER;

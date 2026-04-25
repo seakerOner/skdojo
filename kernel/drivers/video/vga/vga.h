@@ -18,14 +18,14 @@ typedef struct {
     u32 max_rows;
 } vga_videobuffer;
 
-void vga_new_videobuffer(u32 start_row, u32 start_col, 
+void vga_new_videobuffer( u32 start_row, u32 start_col, 
                             u32 max_collumns, u32 max_rows, 
-                            vga_videobuffer* out);
+                            vga_videobuffer* out );
 
-void vga_clear(vga_videobuffer* vga, const StyleColor colors); 
+void vga_clear( vga_videobuffer* vga, const StyleColor colors ); 
 
-void vga_draw_cell(vga_videobuffer* vga, u32 row, u32 col, char c, StyleColor style);
-void vga_read_cell(vga_videobuffer* vga, u32 row, u32 col, char* out, StyleColor* style_out);
+void vga_draw_cell( vga_videobuffer* vga, u32 row, u32 col, char c, StyleColor style );
+void vga_read_cell( vga_videobuffer* vga, u32 row, u32 col, char* out, StyleColor* style_out );
 
 #define VGA_COLUMNS 80
 #define VGA_ROWS 25

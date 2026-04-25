@@ -3,7 +3,7 @@
 #include "../video/wmanager_sensei.h"
 #include "./printk.h"
 
-void printk(const char* msg) {
+void printk( const char* msg ) {
     UNUSED(msg);
     // const DojoTheme* theme = dojo_get_theme();
     // VideoSensei* sensei = get_video_sensei();
@@ -11,7 +11,7 @@ void printk(const char* msg) {
     // sensei->driver.print(wmanager_get_focused()->framebuffer, msg, theme->palette.main_colors);
 }
 
-void printk_err(const char* msg) {
+void printk_err( const char* msg ) {
     UNUSED(msg);
     // const DojoTheme* theme = dojo_get_theme();
     // VideoSensei* sensei = get_video_sensei();
@@ -19,7 +19,7 @@ void printk_err(const char* msg) {
     // sensei->driver.print(wmanager_get_focused()->framebuffer, msg, theme->palette.err_color);
 }
 
-void printk_warn(const char* msg) {
+void printk_warn( const char* msg ) {
     UNUSED(msg);
     // const DojoTheme* theme = dojo_get_theme();
     // VideoSensei* sensei = get_video_sensei();
@@ -27,7 +27,7 @@ void printk_warn(const char* msg) {
     // sensei->driver.print(wmanager_get_focused()->framebuffer, msg, theme->palette.highlight_color);
 }
 
-void printk_succ(const char* msg) {
+void printk_succ( const char* msg ) {
     UNUSED(msg);
     // const DojoTheme* theme = dojo_get_theme();
     // VideoSensei* sensei = get_video_sensei();
@@ -35,7 +35,7 @@ void printk_succ(const char* msg) {
     // sensei->driver.print(wmanager_get_focused()->framebuffer, msg, theme->palette.success_color);
 }
 
-void putck(const char character) {
+void putck( const char character ) {
     UNUSED(character);
     // const DojoTheme* theme = dojo_get_theme();
     // VideoSensei* sensei = get_video_sensei();

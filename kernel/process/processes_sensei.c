@@ -8,7 +8,7 @@ void create_processes_sensei() {
 }
 
 DojoProcess* processes_sensei_new_handle() {
-    if (processes_sensei.count >= processes_sensei.capacity) {
+    if ( processes_sensei.count >= processes_sensei.capacity ) {
         return NULL;
     }
     DojoProcess* proc = &processes_sensei.processes[processes_sensei.count];
@@ -18,8 +18,8 @@ DojoProcess* processes_sensei_new_handle() {
 }
 
 void processes_update() {
-    for (u64 x = 0; x < processes_sensei.count; x++) {
-        if (processes_sensei.processes[x].on_update)
-            processes_sensei.processes[x].on_update(processes_sensei.processes[x].app_data);
+    for ( u64 x = 0; x < processes_sensei.count; x++ ) {
+        if ( processes_sensei.processes[x].on_update )
+            processes_sensei.processes[x].on_update( processes_sensei.processes[x].app_data );
     }
 }

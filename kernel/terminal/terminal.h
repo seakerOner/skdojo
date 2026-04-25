@@ -46,21 +46,21 @@ typedef struct {
     DojoTerminal terminal;
 } TerminalProcess;
 
-DojoTerminal* terminal_new(CompWinFrame* frame, DojoTerminal* t);
+DojoTerminal* terminal_new( CompWinFrame* frame, DojoTerminal* t );
 //DojoTerminal* terminal_new(CompWinFrame* frame);
 
-void terminal_print(DojoTerminal* terminal, const char* string);
-void terminal_printDEC(DojoTerminal* terminal, u64 num);
-void terminal_putc(DojoTerminal* terminal, char c);
+void terminal_print( DojoTerminal* terminal, const char* string );
+void terminal_printDEC( DojoTerminal* terminal, u64 num );
+void terminal_putc( DojoTerminal* terminal, char c );
 
-void terminal_newline(DojoTerminal* terminal);
-void terminal_gotoline(DojoTerminal* terminal, const u32 line);
-void terminal_scroll(DojoTerminal* terminal);
+void terminal_newline( DojoTerminal* terminal );
+void terminal_gotoline( DojoTerminal* terminal, const u32 line );
+void terminal_scroll( DojoTerminal* terminal );
 
-void terminal_event(void* terminal, KeyEvent* ev);
-void terminal_on_resize(void* app, u32 w, u32 h);
+void terminal_event( void* terminal, KeyEvent* ev );
+void terminal_on_resize( void* app, u32 w, u32 h );
 
-void terminal_destroy(void* terminal);
-void terminal_render(void* terminal);
+void terminal_destroy( void* terminal );
+void terminal_render( void* terminal );
 
 #endif

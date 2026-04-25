@@ -20,9 +20,8 @@ void irq0_kernel_intrpt() {
 
 // PS/2 keyboard interrupt 
 void irq1_kernel_intrpt() {
-    KeyEvent event = ps2_keyboard_translate(inb(0x60));
+    KeyEvent event = ps2_keyboard_translate( inb( 0x60 ) );
 
-    if (!event.__internal_extend) {
-        keyboard_sensei_dispatch_event(event);
-    }
+    if ( !event.__internal_extend ) 
+       keyboard_sensei_dispatch_event( event );
 }

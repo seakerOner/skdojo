@@ -45,7 +45,7 @@ typedef struct {
     ThemePalette palette;
 } DojoTheme;
 
-void             dojo_set_theme(ThemesNames theme);
+void             dojo_set_theme( ThemesNames theme );
 const DojoTheme* dojo_get_theme();
 
 #endif

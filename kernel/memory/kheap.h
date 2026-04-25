@@ -17,16 +17,16 @@ typedef struct {
 #define CEIL_PAGES(bytes, pagesizebytes)                           \
         ((bytes / pagesizebytes) + (bytes % pagesizebytes > 0))    \
 
-void start_kheap(MemorySensei* mem_sensei);
+void start_kheap( MemorySensei* mem_sensei );
 
 // returns NULL on failure
-void* kheap_reserve(u64 num_pages);
+void* kheap_reserve( u64 num_pages );
 
 // returns NULL on failure, original memory is untouched on failure
-void* kheap_resize(void* ptr, u64 old_num_pages, u64 num_pages);
+void* kheap_resize( void* ptr, u64 old_num_pages, u64 num_pages );
 
 // on page double free poisons memory (0xDEDEDEDE....)
-u32   kheap_free   (void* ptr, u64 num_pages);
+u32   kheap_free   ( void* ptr, u64 num_pages );
 
 #define KHFLAG_DFREE 0xDE
 

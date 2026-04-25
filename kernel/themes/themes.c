@@ -7,7 +7,7 @@ static inline void set_vga_theme() {
     dojo_theme.cursor = '_';
     ThemePalette* _vga = &dojo_theme.palette;
     
-    switch (dojo_theme.name) {
+    switch ( dojo_theme.name ) {
         case THEME_UGLYDOJO:
             _vga->main_colors.bg.value        = VGA_BLUE;
             _vga->main_colors.fg.value        = VGA_LIGHT_GRAY;
@@ -84,7 +84,7 @@ static inline void set_vga_theme() {
 
 }
 
-void dojo_set_theme(ThemesNames theme) {
+void dojo_set_theme( ThemesNames theme ) {
     dojo_theme.name = theme;
 
     set_vga_theme();

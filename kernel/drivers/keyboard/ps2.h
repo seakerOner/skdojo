@@ -18,6 +18,6 @@
 #define PS2_EXT_SUPER_LEFT_RELEASED  0xDB
 #define PS2_EXT_SUPER_RIGHT_RELEASED 0xDC
 
-KeyEvent ps2_keyboard_translate(unsigned char scancode);
+KeyEvent ps2_keyboard_translate( unsigned char scancode );
 
 #endif

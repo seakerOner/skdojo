@@ -9,7 +9,7 @@ KeyboardSensei* get_keyboard_sensei() {
     return &keyboard_sensei;
 }
 
-void keyboard_sensei_dispatch_event(KeyEvent ev) {
+void keyboard_sensei_dispatch_event( KeyEvent ev ) {
     u64 abs_index = keyboard_sensei.index % keyboard_sensei.stack_capacity;
 
     keyboard_sensei.event_stack[abs_index] = ev;
@@ -22,7 +22,7 @@ i32 keyboard_has_events() {
 
 i32 keyboard_pop_event(KeyEvent* ev) {
     u64 abs_index = keyboard_sensei.index % keyboard_sensei.stack_capacity;
-    if (abs_index == 0) {
+    if ( abs_index == 0 ) {
         ev = NULL;
         return 0;
     }

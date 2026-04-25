@@ -58,7 +58,7 @@ ltr ax
 ; address passed as an argument to the kernel with relevant information 
 mov rdi, 0x50000 + KERNEL_BASE
 
-mov rax, MEMMAP+0x10000
+mov rax, MEMMAP+0x10000 + KERNEL_BASE
 mov [rdi], rax 
 
 movzx rax , word [MEMMAP_ENTRIES+0x10000]   ; zero extend to 64bits

@@ -25,16 +25,19 @@ typedef u8                 boolean;
             *(((u8*)ptr)+x) = c;            \
     } while (0);
 
+#define ALIGN_UP(addr, a) (((addr) + (a-1)) & ~(a-1))
+#define ALIGN_DOWN(addr, a) ((addr) & ~(a-1))
+
 #define TRUE  1 
 #define FALSE 0
 
 #define UNUSED(x) (void)x
 
-#define KB(n) (n * 1024)
-#define MB(n) (n * (1024 * 1024))
-#define GB(n) (n * (1024 * 1024 * 1024))
+#define KB(n) ((u64)(n * 1024ULL))
+#define MB(n) ((u64)(n * (1024ULL * 1024ULL)))
+#define GB(n) ((u64)(n * (1024ULL * 1024ULL * 1024ULL)))
 
-#define POISON 0xDEDEDEDEDEDEDEDE
+#define POISON 0xDEDEDEDEDEDEDEDEULL
 
 
 #endif

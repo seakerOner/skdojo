@@ -11,6 +11,6 @@ void start_time_sensei();
 
 u64 dojo_get_timestamp();
 
-void dojo_sleep_ms(u64 ms);
+void dojo_sleep_ms( u64 ms );
 
 #endif

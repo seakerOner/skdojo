@@ -13,6 +13,6 @@ typedef struct {
 } DojoTatami;
 
 DojoTatami* tatami_start(); 
-void tatami_poll(CompositorSensei* cmp_sensei); 
+void tatami_poll( CompositorSensei* cmp_sensei ); 
 
 #endif

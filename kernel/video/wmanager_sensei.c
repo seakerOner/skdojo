@@ -12,9 +12,9 @@ WManagerSensei* get_wmanager_sensei() {
 }
 
 // -1 if error
-i32 wmanager_create_window(u32 row, u32 col, u32 width, u32 height, VideoSensei* sensei) {
-    if (wmanager_sensei.window_count >= MAX_WINDOWS) {
-        printk_warn("[KERNEL] Maximum windows reached!\n");
+i32 wmanager_create_window( u32 row, u32 col, u32 width, u32 height, VideoSensei* sensei ) {
+    if ( wmanager_sensei.window_count >= MAX_WINDOWS ) {
+        printk_warn( "[KERNEL] Maximum windows reached!\n" );
         return -1;
     }
     u32 id = wmanager_sensei.window_count++;
@@ -26,7 +26,7 @@ i32 wmanager_create_window(u32 row, u32 col, u32 width, u32 height, VideoSensei*
     window->width           = width;
     window->height          = height;
 
-    sensei->driver.new_framebuffer(row, col, width, height, &window->fb_stub);
+    sensei->driver.new_framebuffer( row, col, width, height, &window->fb_stub );
 
     window->framebuffer = &window->fb_stub;
     return id;
@@ -37,8 +37,8 @@ DojoWindow* wmanager_get_focused() {
 }
 
 DojoWindow* wmanager_get_window(u32 id) {
-    if (id >= MAX_WINDOWS) {
-        printk_warn("[Window Sensei ERROR] Out of bounds get_window()\n");
+    if ( id >= MAX_WINDOWS ) {
+        printk_warn( "[Window Sensei ERROR] Out of bounds get_window()\n" );
         return NULL;
     }
     return &wmanager_sensei.windows[id];
@@ -48,9 +48,9 @@ void wmanager_focus(u32 id) {
     wmanager_sensei.focused = id;
 }
 
-void dojo_clear_screen(DojoWindow* window) {
+void dojo_clear_screen( DojoWindow* window ) {
     VideoSensei* sensei = get_video_sensei();
-    sensei->driver.clear(window->framebuffer, dojo_get_theme()->palette.main_colors);
+    sensei->driver.clear( window->framebuffer, dojo_get_theme()->palette.main_colors );
 }
 
 // TODO:

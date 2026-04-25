@@ -23,14 +23,14 @@ typedef enum {
 } VideoType;
 
 typedef struct {
-    void (*draw_cell)        (void* fb, u32 row, u32 col, char c, StyleColor style);
-    void (*read_cell)        (void* fb, u32 row, u32 col, char* out, StyleColor* style_out);
-    void (*clear)            (void* fb, const StyleColor colors);
+    void ( *draw_cell )        ( void* fb, u32 row, u32 col, char c, StyleColor style );
+    void ( *read_cell )        ( void* fb, u32 row, u32 col, char* out, StyleColor* style_out );
+    void ( *clear )            ( void* fb, const StyleColor colors );
 
-    u64  (*framebuffer_size) (); // use this with allocation when mem model is done
-    void (*new_framebuffer)  (u32 start_row, u32 start_col, 
+    u64  ( *framebuffer_size ) (); // use this with allocation when mem model is done
+    void ( *new_framebuffer )  ( u32 start_row, u32 start_col, 
             u32 max_collumns, u32 max_rows, 
-            void* out_fb);
+            void* out_fb );
 } VideoDriver;
 
 typedef struct {
@@ -38,8 +38,6 @@ typedef struct {
 } FrameBuffer;
 
 typedef FrameBuffer* FrameBufferHandle;
-
-
 
 typedef struct {
     VideoDriver driver;

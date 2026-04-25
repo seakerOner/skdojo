@@ -23,6 +23,12 @@
  * This avoids the need for a separate bootstrap memory allocator and
  * keeps early paging setup minimal while maintaining full control.
  */
+
+// TODO: Using a ultra naive way to align memory ranges from boot_info and mapping them to the PML4, 
+// leaving memory that could be used simply being ignored.
+//
+// This could be easily optimized after memory model is stabilized
+
 #include "../inttype.h"
 #include "kata.h"
 #include "../bios_boot_info.h"
@@ -48,6 +54,8 @@
 
 #define PA_TO_VA(p) ((void*)(PHYSMAP_BASE + (p)))
 #define VA_TO_PA(p) ((void*)((p) - PHYSMAP_BASE))
+
+#define IS_PHYSMAP_VALID(virt) (!((virt) < (PHYSMAP_BASE + CONFIG_PHYSICAL_START)))
 
 // address used to bootstrap, kernel must access this address with (HEAP + HIGH_MEM_IDENTITY)
 #define KERNEL_HEAP_START   0x200000
@@ -105,6 +113,36 @@
 #define PAGE_PS              (1ULL << 7)    
 #define PAGE_GLOBAL          (1ULL << 8)
 
+#define IS_VIRT_ON_PML4(virt)  (((RECURSIVE_PML4)->entries[PML4_INDEX(virt)]) & PAGE_PRESENT)   \
+
+#define IS_VIRT_ON_PDPT(virt)                                                               \
+    (((RECURSIVE_PDPT(PML4_INDEX(virt)))->entries[PDPT_INDEX(virt)]) & PAGE_PRESENT)        \
+
+#define IS_VIRT_ON_PD(virt)                                                                         \
+    ((RECURSIVE_PD(PML4_INDEX(virt), PDPT_INDEX(virt)))->entries[PD_INDEX(virt)] & PAGE_PRESENT)    \
+    
+#define IS_VIRT_PD_HUGE(virt)                                                                                  \
+    (((RECURSIVE_PD(PML4_INDEX(virt), PDPT_INDEX(virt)))->entries[PD_INDEX(virt)] & (PAGE_PRESENT | PAGE_PS))  \
+        == (PAGE_PRESENT | PAGE_PS))    \
+
+#define IS_VIRT_ON_PT(virt)                                             \
+        ((RECURSIVE_PT(                                                 \
+            PML4_INDEX((virt)),                                         \
+            PDPT_INDEX((virt)),                                         \
+            PD_INDEX((virt))                                            \
+        )->entries[PT_INDEX((virt))]) & PAGE_PRESENT)                   \
+
+
+#define IS_VA_MAPPED(virt)                                              \
+    (IS_VIRT_ON_PML4(virt)                                              \
+        ? IS_VIRT_ON_PDPT(virt)                                         \
+            ? IS_VIRT_ON_PD(virt)                                       \
+                ? IS_VIRT_PD_HUGE(virt) ? 1                             \
+                : IS_VIRT_ON_PT(virt)                                   \
+            : 0                                                         \
+        : 0                                                             \
+    : 0 )      
+
 typedef struct {
    u64 bytes_usable;
    u64 bytes_reserved;
@@ -157,9 +195,9 @@ typedef struct {
 // A work around is grabbing the "_bootstrap_start" symbol provided by the linker and aliase the structures we want.
 // This allows to bypass the compiler assumptions about RIP relative addressing
 typedef struct {
-    PtTable __attribute__((aligned(KB(4)))) heap_pts[PT_TABLES_FOR_KHEAP];
-    PdptTable __attribute__((aligned(KB(4)))) physmap_pdpt;
-    PdTable __attribute__((aligned(KB(4)))) physmap_pds[128];     // 128GB max physical map
+    PtTable __attribute__(( aligned( KB( 4 ) ))) heap_pts[PT_TABLES_FOR_KHEAP];
+    PdptTable __attribute__(( aligned( KB( 4 ) ))) physmap_pdpt;
+    PdTable __attribute__(( aligned( KB( 4 ) ))) physmap_pds[128];     // 128GB max physical map
 } BootstrapLayout;
 
 MemorySensei* create_memory_sensei(BiosBootInfo* boot_info);
@@ -172,13 +210,13 @@ BootstrapLayout* get_bootstrap();
 static inline void reload_cr3() {
     __asm__ __volatile__ ("mov %%cr3, %%rax; mov %%rax, %%cr3" ::: "rax", "memory");
 }
-static inline void invlpg(u64 virt) {
+static inline void invlpg( u64 virt ) {
     __asm__ __volatile__("invlpg (%0)" :: "r"(virt) : "memory");
 }
 
 
 // returns 0xDEDEDEDEDEDEDEDE on out of bounds VA
-u64 kheap_virt_to_phys(u64 virt);
+u64 kheap_virt_to_phys( u64 virt );
  
 
 #endif

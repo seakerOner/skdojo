@@ -57,9 +57,9 @@ typedef struct {
 
 KeyboardSensei* get_keyboard_sensei();
 
-void keyboard_sensei_dispatch_event(KeyEvent ev);
+void keyboard_sensei_dispatch_event( KeyEvent ev );
 
 i32  keyboard_has_events();
-i32  keyboard_pop_event(KeyEvent* ev);
+i32  keyboard_pop_event( KeyEvent* ev );
 
 #endif

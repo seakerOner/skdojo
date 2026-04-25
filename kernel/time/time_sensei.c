@@ -19,12 +19,12 @@ static inline void halt() {
 // this should be used mainly be the scheduler when it wants to into IDLE state 
 // 
 // scheduler must create a process by process sleep call
-void dojo_sleep_ms(u64 ms) {
-    u64 target_ticks = dojo_get_timestamp() + MS_TO_TICKS(ms);
+void dojo_sleep_ms( u64 ms ) {
+    u64 target_ticks = dojo_get_timestamp() + MS_TO_TICKS( ms );
 
     // a sleep call will do at minimum 1 halt "cycle"
     do {
         halt();
-    } while (dojo_get_timestamp() < target_ticks);
+    } while ( dojo_get_timestamp() < target_ticks );
 }
 

@@ -72,28 +72,28 @@ typedef struct {
     CompGrid        grid;
 } CompositorSensei;
 
-CompositorSensei* create_compositor_sensei(DojoWindow* window);
+CompositorSensei* create_compositor_sensei( DojoWindow* window );
 
-CompWinFrame* compositor_create_frame_current_row(CompositorSensei* c_sensei);
-CompWinFrame* compositor_create_frame_new_row(CompositorSensei* c_sensei);
+CompWinFrame* compositor_create_frame_current_row( CompositorSensei* c_sensei );
+CompWinFrame* compositor_create_frame_new_row( CompositorSensei* c_sensei );
 
-void comp_update_grid(CompositorSensei* c_sensei);
+void comp_update_grid( CompositorSensei* c_sensei );
 
-void compositor_focus_frame(CompositorSensei* c_sensei, u32 frame_id);
+void compositor_focus_frame( CompositorSensei* c_sensei, u32 frame_id );
 
-void compositor_focus_up(CompositorSensei* c_sensei);
-void compositor_focus_down(CompositorSensei* c_sensei);
-void compositor_focus_left(CompositorSensei* c_sensei);
-void compositor_focus_right(CompositorSensei* c_sensei);
+void compositor_focus_up( CompositorSensei* c_sensei );
+void compositor_focus_down( CompositorSensei* c_sensei );
+void compositor_focus_left( CompositorSensei* c_sensei );
+void compositor_focus_right( CompositorSensei* c_sensei );
 
-CompWinFrame* compositor_get_focused_frame(CompositorSensei* c_sensei);
-void          compositor_destroy_focused_frame(CompositorSensei* c_sensei);
+CompWinFrame* compositor_get_focused_frame( CompositorSensei* c_sensei );
+void          compositor_destroy_focused_frame( CompositorSensei* c_sensei );
 
 // 1 -> polled | 0 ->ignored
-u32 compositor_poll(CompositorSensei* c_sensei, KeyEvent* ev);
+u32 compositor_poll( CompositorSensei* c_sensei, KeyEvent* ev );
 
-void comp_draw_cell(CompWinFrame* frame, u32 row, u32 col, char c, StyleColor style);
-void comp_read_cell(CompWinFrame* frame, u32 row, u32 col, char* out, StyleColor* style_out);
-void comp_clear    (CompWinFrame* frame, const StyleColor colors);
+void comp_draw_cell( CompWinFrame* frame, u32 row, u32 col, char c, StyleColor style );
+void comp_read_cell( CompWinFrame* frame, u32 row, u32 col, char* out, StyleColor* style_out );
+void comp_clear    ( CompWinFrame* frame, const StyleColor colors );
 
 #endif

@@ -3,6 +3,11 @@
 
 static KataAllocator kata_allocator = {0};
 
+/* 
+ * TODO: Since we store the metadata of kata inside the actual blocks and skip it when returning 
+ * the address to the callee. It's not suitable for new pml4 tables
+ * */
+
 KataAllocator* kata_init() {
     kata_allocator.max_orders = MAX_ORDER;
     FILL( kata_allocator.free_lists, 0, sizeof( kata_allocator.free_lists ));
@@ -54,11 +59,12 @@ void kata_add_region( u64 addr, u64 size ) {
 }
 
 void kata_add_block( u64 addr, u32 order ) {
-    KataBlock* block = ( KataBlock* ) PA_TO_VA( addr );
-    KataAllocator* ka = &kata_allocator;
+    KataBlock* block        = ( KataBlock* ) PA_TO_VA( addr );
+    KataAllocator* ka       = &kata_allocator;
 
-    block->next = ka->free_lists[order];
-    ka->free_lists[order] = block;
+    block->next             = ka->free_lists[order];
+    block->order            = order;
+    ka->free_lists[order]   = block;
 }
 
 void* kata_alloc( u64 order ) {
@@ -71,7 +77,7 @@ void* kata_alloc( u64 order ) {
         KataBlock* blk = ka->free_lists[x];
         ka->free_lists[x] = blk->next;
 
-        // if higher order than request, split memory block until we get a block of the desired ORDER
+        // if higher order than requested, split memory block until we get a block of the desired ORDER
         while ( x > order ) {
             x--;
 
@@ -83,8 +89,7 @@ void* kata_alloc( u64 order ) {
             kata_add_block( split_blk_addr, x );
         }
 
-        u8* ptr = ( u8* ) blk;
-
+        u8* ptr     = ( u8* ) blk;
         ptr += sizeof( KataBlock );     // skip metadata
 
         return ( void * )ptr;
@@ -93,5 +98,51 @@ void* kata_alloc( u64 order ) {
     return NULL;
 }
 
-void kata_free( u64 addr, u64 order ) {
+void kata_free( u64 addr ) {
+    KataAllocator* ka   =  &kata_allocator;
+    KataBlock* blk      = ( KataBlock* )( ( u8* )addr - sizeof( KataBlock ) );
+    u64 p_addr          = ( u64 )VA_TO_PA( ( u64 )blk );
+    u32 order           = blk->order;
+
+    while ( order < ka->max_orders ) {
+        u64 blk_size         = KB( 4 ) << order;
+
+        u64 split_addr       = p_addr ^ blk_size;
+
+        if ( !IS_PHYSMAP_VALID( ( u64 )PA_TO_VA( split_addr ) ) )
+            break;
+
+        KataBlock* prev      = NULL;
+        KataBlock* curr      = ka->free_lists[order];
+
+        while ( curr ) {
+             /* 
+              * if 'split_addr' is on a different order than requested then 
+              * `split_addr` itself is split, making it not suitable to be merged
+              * */ 
+            if ( ( u64 )VA_TO_PA( ( u64 )curr ) == split_addr 
+                    && curr->order == order)    
+                break;
+
+            prev = curr;
+            curr = curr->next;
+        }
+
+        // not a free split
+        if ( !curr )
+            break;
+
+        // remove split from free list
+        if ( prev )
+            prev->next = curr->next;
+        else 
+            ka->free_lists[order] = curr->next;
+
+        if ( split_addr < p_addr )
+            p_addr = split_addr;
+
+        order++;
+    }
+
+    kata_add_block( p_addr, order );
 }

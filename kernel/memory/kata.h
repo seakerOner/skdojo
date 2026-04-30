@@ -11,6 +11,7 @@
 
 typedef struct KataBlock {
     struct KataBlock* next;
+    u32 order;
 } KataBlock;
 
 typedef struct {
@@ -21,7 +22,7 @@ typedef struct {
 KataAllocator* kata_init();
 
 void* kata_alloc( u64 order );
-void kata_free( u64 addr, u64 order );
+void kata_free( u64 addr );
 
 void kata_populate_regions( BiosBootInfo* bios_boot_info );
 

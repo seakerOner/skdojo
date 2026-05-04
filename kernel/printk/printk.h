@@ -6,6 +6,12 @@
 
 #define PRINTK_BUF_DYN_ORDER  ( ORDER_32KB )
 
+typedef struct {
+    ascii*  data;
+    u64      idx;
+    u64 capacity;
+} PrintkBuffer;
+
 void printk_init();
 
 void printk( const ascii* msg );

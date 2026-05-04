@@ -1,46 +1,50 @@
 #include "./printk.h"
 
-static ascii* printk_buffer = NULL;
+static PrintkBuffer printk_buffer = {0};
 
 void printk_init() {
+    printk_buffer.data     = ( ascii* )kata_alloc(PRINTK_BUF_DYN_ORDER, TRUE);
+    printk_buffer.capacity = KB(4) << PRINTK_BUF_DYN_ORDER;
+    printk_buffer.idx      = 0;
+}
+
+static inline void _insert_kprint_buffer( const ascii character) {
+    u64 abs_idx = printk_buffer.idx++ % printk_buffer.capacity;
+    printk_buffer.data[abs_idx] = character;
 }
 
 void printk( const ascii* msg ) {
-    UNUSED(msg);
-    // const DojoTheme* theme = dojo_get_theme();
-    // VideoSensei* sensei = get_video_sensei();
+    ascii* info = KSTR( "[INFO]" );
+    while ( *info ) 
+        _insert_kprint_buffer( *info++ );
 
-    // sensei->driver.print(wmanager_get_focused()->framebuffer, msg, theme->palette.main_colors);
+    while ( *msg )
+        _insert_kprint_buffer( *msg++ );
 }
 
 void printk_err( const ascii* msg ) {
-    UNUSED(msg);
-    // const DojoTheme* theme = dojo_get_theme();
-    // VideoSensei* sensei = get_video_sensei();
+    ascii* err = KSTR( "[ERROR]" );
+    while ( *err ) 
+        _insert_kprint_buffer( *err++ );
 
-    // sensei->driver.print(wmanager_get_focused()->framebuffer, msg, theme->palette.err_color);
+    while ( *msg )
+        _insert_kprint_buffer( *msg++ );
 }
 
 void printk_warn( const ascii* msg ) {
-    UNUSED(msg);
-    // const DojoTheme* theme = dojo_get_theme();
-    // VideoSensei* sensei = get_video_sensei();
+    ascii* warn = KSTR( "[WARNING]" );
+    while ( *warn ) 
+        _insert_kprint_buffer( *warn++ );
 
-    // sensei->driver.print(wmanager_get_focused()->framebuffer, msg, theme->palette.highlight_color);
+    while ( *msg )
+        _insert_kprint_buffer( *msg++ );
 }
 
 void printk_succ( const ascii* msg ) {
-    UNUSED(msg);
-    // const DojoTheme* theme = dojo_get_theme();
-    // VideoSensei* sensei = get_video_sensei();
+    ascii* succ = KSTR( "[SUCCESS]" );
+    while ( *succ ) 
+        _insert_kprint_buffer( *succ++ );
 
-    // sensei->driver.print(wmanager_get_focused()->framebuffer, msg, theme->palette.success_color);
-}
-
-void putck( const ascii character ) {
-    UNUSED(character);
-    // const DojoTheme* theme = dojo_get_theme();
-    // VideoSensei* sensei = get_video_sensei();
-
-    // sensei->driver.putc(wmanager_get_focused()->framebuffer, character, theme->palette.main_colors);
+    while ( *msg )
+        _insert_kprint_buffer( *msg++ );
 }

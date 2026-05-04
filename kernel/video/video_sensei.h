@@ -23,8 +23,8 @@ typedef enum {
 } VideoType;
 
 typedef struct {
-    void ( *draw_cell )        ( void* fb, u32 row, u32 col, char c, StyleColor style );
-    void ( *read_cell )        ( void* fb, u32 row, u32 col, char* out, StyleColor* style_out );
+    void ( *draw_cell )        ( void* fb, u32 row, u32 col, ascii c, StyleColor style );
+    void ( *read_cell )        ( void* fb, u32 row, u32 col, ascii* out, StyleColor* style_out );
     void ( *clear )            ( void* fb, const StyleColor colors );
 
     u64  ( *framebuffer_size ) (); // use this with allocation when mem model is done

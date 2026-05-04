@@ -4,7 +4,7 @@
 // PS/2 Scan Code Set 1 US layout
 //
 
-static unsigned char ps2_scanmap[128] = 
+static ascii ps2_scanmap[128] = 
 {
     0, 27, '1','2','3','4','5','6','7','8','9','0','-','=', '\b',
     '\t',
@@ -20,7 +20,7 @@ static unsigned char ps2_scanmap[128] =
     ' ',
 };
 
-static unsigned char ps2_scanmap_shift[128] = 
+static ascii ps2_scanmap_shift[128] = 
 {
     0, 27, '!','@','#','$','%','^','&','*','(',')','_','+', '\b',
     '\t',
@@ -95,7 +95,7 @@ static int ps2_fn         = 0;
 static int ps2_super      = 0;
 
 // PS/2 keyboard interrupt 
-KeyEvent ps2_keyboard_translate(unsigned char scancode) {
+KeyEvent ps2_keyboard_translate( ascii scancode ) {
     KeyEvent event = {0};
 
     if (scancode == 0xE0) {

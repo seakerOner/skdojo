@@ -36,7 +36,7 @@ typedef enum {
 
 typedef struct {
     KeyCode key;       // raw
-    char ascii;     // with modifiers
+    ascii ascii;     // with modifiers
 
     u8 pressed;     // 1 = press, 0 = release
 

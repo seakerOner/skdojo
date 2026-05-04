@@ -1,12 +1,18 @@
 #ifndef PRINTK_H
 #define PRINTK_H
 
+#include "../inttype.h"
+#include "../memory/kata.h"
 
-void printk( const char* msg );
-void printk_err( const char* msg );
-void printk_warn( const char* msg );
-void printk_succ( const char* msg );
+#define PRINTK_BUF_DYN_ORDER  ( ORDER_32KB )
 
-void putck( const char character );
+void printk_init();
+
+void printk( const ascii* msg );
+void printk_err( const ascii* msg );
+void printk_warn( const ascii* msg );
+void printk_succ( const ascii* msg );
+
+void putck( const ascii character );
 
 #endif

@@ -1,6 +1,7 @@
 #ifndef PS2_KEYBOARD_H
 #define PS2_KEYBOARD_H
 
+#include "../../inttype.h"
 #include "../../keyboard/keyboard_sensei.h"
 
 #define PS2_SHIFT_L_PRESS 0x2A
@@ -18,6 +19,6 @@
 #define PS2_EXT_SUPER_LEFT_RELEASED  0xDB
 #define PS2_EXT_SUPER_RIGHT_RELEASED 0xDC
 
-KeyEvent ps2_keyboard_translate( unsigned char scancode );
+KeyEvent ps2_keyboard_translate( ascii scancode );
 
 #endif

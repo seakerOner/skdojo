@@ -1,6 +1,7 @@
 #include "kheap.h"
 #include "kata.h"
 #include "memory_sensei.h"
+#include "../printk/printk.h"
 
 static KernelHeap k_heap = {0};
 
@@ -104,11 +105,13 @@ static void map_kheap() {
         void* ptr = kata_alloc( ORDER_2MB, TRUE );
         if ( ptr == NULL ) {
             // TODO:
+            printk_err( KSTR( "[KHEAP][map_kheap] `kata_alloc` failed to allocate a 2MB ORDER" ));
+            continue;
         }
         u64 phys  = ( u64 )VA_TO_PA( ptr );
         map_2MB_page(virt, phys);
-        virt     += MB( 2 );
-        free_mem += MB(2);
+        virt      += MB( 2 );
+        *free_mem += MB(2);
     }
 };
 

@@ -12,7 +12,7 @@
 #define TERMINAL_BUFFER_LEN  256
 
 typedef struct {
-    char* data;
+    ascii* data;
     u64 c_count;
     u32 line_capacity;
     u32 line_len;
@@ -21,7 +21,7 @@ typedef struct {
 } TerminalHistory;
 
 typedef struct {
-    char data[TERMINAL_BUFFER_LEN];
+    ascii data[TERMINAL_BUFFER_LEN];
     u32 len;
     u32 index;
     u32 cursor;
@@ -49,9 +49,9 @@ typedef struct {
 DojoTerminal* terminal_new( CompWinFrame* frame, DojoTerminal* t );
 //DojoTerminal* terminal_new(CompWinFrame* frame);
 
-void terminal_print( DojoTerminal* terminal, const char* string );
+void terminal_print( DojoTerminal* terminal, const ascii* string );
 void terminal_printDEC( DojoTerminal* terminal, u64 num );
-void terminal_putc( DojoTerminal* terminal, char c );
+void terminal_putc( DojoTerminal* terminal, ascii c );
 
 void terminal_newline( DojoTerminal* terminal );
 void terminal_gotoline( DojoTerminal* terminal, const u32 line );

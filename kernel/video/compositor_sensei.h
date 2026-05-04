@@ -15,14 +15,14 @@ typedef struct {
     u32 width;
     u32 height;
 
-    char hor_border_c;
-    char ver_border_c;
-    char bot_border_c;
+    ascii hor_border_c;
+    ascii ver_border_c;
+    ascii bot_border_c;
 
-    char top_l_corner_c;
-    char top_r_corner_c;
-    char bot_r_corner_c;
-    char bot_l_corner_c;
+    ascii top_l_corner_c;
+    ascii top_r_corner_c;
+    ascii bot_r_corner_c;
+    ascii bot_l_corner_c;
 } CompWinBorder;
 
 typedef struct {
@@ -92,8 +92,8 @@ void          compositor_destroy_focused_frame( CompositorSensei* c_sensei );
 // 1 -> polled | 0 ->ignored
 u32 compositor_poll( CompositorSensei* c_sensei, KeyEvent* ev );
 
-void comp_draw_cell( CompWinFrame* frame, u32 row, u32 col, char c, StyleColor style );
-void comp_read_cell( CompWinFrame* frame, u32 row, u32 col, char* out, StyleColor* style_out );
+void comp_draw_cell( CompWinFrame* frame, u32 row, u32 col, ascii c, StyleColor style );
+void comp_read_cell( CompWinFrame* frame, u32 row, u32 col, ascii* out, StyleColor* style_out );
 void comp_clear    ( CompWinFrame* frame, const StyleColor colors );
 
 #endif

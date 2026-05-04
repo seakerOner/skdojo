@@ -338,7 +338,7 @@ static void comp_draw_borders( CompositorSensei* c_sensei ) {
             u32 on_left_cor = t == 0;
             u32 on_right_cor =  t + 1 == border->width;
 
-            char top_char, bot_char;
+            ascii top_char, bot_char;
             if ( on_left_cor ) {
                 top_char = border->top_l_corner_c;
                 bot_char = border->bot_l_corner_c;
@@ -575,14 +575,14 @@ u32 compositor_poll( CompositorSensei* c_sensei, KeyEvent* ev ) {
     return 0;
 }
 
-void comp_draw_cell( CompWinFrame* frame, u32 row, u32 col, char c, StyleColor style ) {
+void comp_draw_cell( CompWinFrame* frame, u32 row, u32 col, ascii c, StyleColor style ) {
     get_video_sensei()->driver.draw_cell( frame->parent_window->framebuffer, 
                                                 row + frame->start_height,
                                                 col + frame->start_width,
                                                 c, style );
 };
 
-void comp_read_cell( CompWinFrame* frame, u32 row, u32 col, char* out, StyleColor* style_out ) {
+void comp_read_cell( CompWinFrame* frame, u32 row, u32 col, ascii* out, StyleColor* style_out ) {
     get_video_sensei()->driver.read_cell( frame->parent_window->framebuffer,
                                                 row + frame->start_height,
                                                 col + frame->start_width,

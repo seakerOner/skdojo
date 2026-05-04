@@ -45,36 +45,35 @@ void kmain( BiosBootInfo* boot_info ) {
     u32 root_t_comp_tag          = root_terminal.frame->id;
     compositor_focus_frame( tatami->cmp_sensei, root_t_comp_tag );
 
-    terminal_print( &root_terminal, "Welcome to the Dojo!\n>Using Tatami\nContact: seakerone@proton.me\n\n" );
+    terminal_print( &root_terminal, KSTR( "Welcome to the Dojo!\n>Using Tatami\nContact: seakerone@proton.me\n\n"  ));
     terminal_putc( &root_terminal, '>' );
 
-    terminal_print( &second_terminal, "Using VGA text mode \n" );
-    terminal_print( &second_terminal, ">PHYSICAL RAM STATS:\n" );
-    terminal_print( &second_terminal, "- [USABLE] ~" );
+    terminal_print( &second_terminal, KSTR( "Using VGA text mode \n" ));
+    terminal_print( &second_terminal, KSTR( ">PHYSICAL RAM STATS:\n" ));
+    terminal_print( &second_terminal, KSTR( "- [USABLE] ~" ));
     terminal_printDEC( &second_terminal, sensei_mem->physical_stats.bytes_usable/MB(1) );
-    terminal_print( &second_terminal, "MB" );
-    terminal_print( &second_terminal, " [RESERVED] ~" );
+    terminal_print( &second_terminal, KSTR( "MB" ));
+    terminal_print( &second_terminal, KSTR( " [RESERVED] ~" ));
     terminal_printDEC( &second_terminal, sensei_mem->physical_stats.bytes_reserved/KB(1) );
-    terminal_print( &second_terminal, "KB\n" );
-    terminal_print( &second_terminal, "- [BAD]    ~" );
+    terminal_print( &second_terminal, KSTR( "KB\n" ));
+    terminal_print( &second_terminal, KSTR( "- [BAD]    ~" ));
     terminal_printDEC( &second_terminal, sensei_mem->physical_stats.bytes_bad_mem/KB(1) );
-    terminal_print( &second_terminal, "KB\n" );
+    terminal_print( &second_terminal, KSTR( "KB\n" ));
 
-    terminal_print( &second_terminal, ">KERNEL HEAP MEM STATS:\n" );
-    terminal_print( &second_terminal, "- [CAPACITY] ~" );
+    terminal_print( &second_terminal, KSTR( ">KERNEL HEAP MEM STATS:\n" ));
+    terminal_print( &second_terminal, KSTR( "- [CAPACITY] ~" ));
     terminal_printDEC( &second_terminal, sensei_mem->kernel_info.heap_bytes_cap/MB(1) );
-    terminal_print( &second_terminal, "MB" );
-    terminal_print( &second_terminal, " [FREE] ~" );
+    terminal_print( &second_terminal, KSTR( "MB" ));
+    terminal_print( &second_terminal, KSTR( " [FREE] ~" ));
     terminal_printDEC( &second_terminal, sensei_mem->kernel_info.heap_bytes_free/MB(1) );
-    terminal_print( &second_terminal, "MB\n" );
-    terminal_print( &second_terminal, "- [USED]     ~" );
+    terminal_print( &second_terminal, KSTR( "MB\n" ));
+    terminal_print( &second_terminal, KSTR( "- [USED]     ~" ));
     terminal_printDEC( &second_terminal, sensei_mem->kernel_info.heap_bytes_used/KB(1) );
-    terminal_print( &second_terminal, "KB\n" );
-    terminal_print( &second_terminal, "- PAGES HANGED:     " );
+    terminal_print( &second_terminal, KSTR( "KB\n" ));
+    terminal_print( &second_terminal, KSTR( "- PAGES HANGED:     " ));
     terminal_printDEC( &second_terminal, sensei_mem->kernel_info.heap_pages_hanged );
 
-
-    terminal_print( &second_terminal,"\n>Senseis activated:\n"
+    terminal_print( &second_terminal,KSTR( "\n>Senseis activated:\n"
             "- Memory Sensei\n"
             "- Video Sensei\n"
             "- Window Manager Sensei\n"
@@ -82,10 +81,9 @@ void kmain( BiosBootInfo* boot_info ) {
             "- Keyboard Sensei\n"
             "- Processes Sensei\n"
             "- Time Sensei\n"
-            "\n" );
+            "\n" ));
     terminal_putc( &second_terminal, '>' );
 
-    // TODO: second console is crashing when adding to history
     while ( 1 ) {
         tatami_poll( tatami->cmp_sensei );
 

@@ -10,13 +10,13 @@ void vga_new_videobuffer( u32 start_row, u32 start_col,
     v_buffer.max_collumns = max_collumns;
     v_buffer.max_rows = max_rows;
 
-    v_buffer.vga_base = ( volatile char* ) 0xB8000+HIGH_MEM_IDENTITY;
+    v_buffer.vga_base = ( volatile ascii* ) 0xB8000+HIGH_MEM_IDENTITY;
 
     *out_fb = v_buffer;
 }
 
 
-void vga_draw_cell( vga_videobuffer* vga, u32 row, u32 col, char c, StyleColor style ) {
+void vga_draw_cell( vga_videobuffer* vga, u32 row, u32 col, ascii c, StyleColor style ) {
     if (row > vga->max_rows || col > vga->max_collumns)
         return;
 
@@ -28,7 +28,7 @@ void vga_draw_cell( vga_videobuffer* vga, u32 row, u32 col, char c, StyleColor s
     vga->vga_base[index+1] = (( style.bg.value & 0x0F ) << 4 ) | ( style.fg.value & 0x0F );
 }
 
-void vga_read_cell( vga_videobuffer* vga, u32 row, u32 col, char* out, StyleColor* style_out ) {
+void vga_read_cell( vga_videobuffer* vga, u32 row, u32 col, ascii* out, StyleColor* style_out ) {
     if (row > vga->max_rows || col > vga->max_collumns)
         return;
 

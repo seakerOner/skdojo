@@ -19,7 +19,7 @@ VideoSensei* create_video_sensei() {
     video_sensei.screen_height = VGA_ROWS;
 
     if ( video_sensei.driver.framebuffer_size() > DRIVER_MAX_FRAMEBUFFER_LEN_BYTES ) {
-        //printk_warn("[VIDEO SENSEI WARNING] Framebuffer bigger than permited by Video Sensei.\n");
+        printk_warn( KSTR( "[VIDEO SENSEI] Framebuffer bigger than permited by Video Sensei.\n" ));
         // hang
         while (1);
     }

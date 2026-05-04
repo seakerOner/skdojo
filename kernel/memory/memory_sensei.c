@@ -43,8 +43,9 @@ MemorySensei* create_memory_sensei( BiosBootInfo* boot_info ) {
 
     memory_sensei.kata = ka;
 
-    memory_sensei.kernel_info.heap_bytes_cap = KERNEL_HEAP_LEN;
-    memory_sensei.kernel_info.heap_page_max  = KERNEL_HEAP_NUM_PAGES;
+    memory_sensei.kernel_info.heap_bytes_cap  = KERNEL_HEAP_LEN;
+    memory_sensei.kernel_info.heap_page_max   = KERNEL_HEAP_NUM_PAGES;
+    memory_sensei.kernel_info.heap_bytes_free = 0;
                                
     for ( u64 x = 0; x < boot_info->boot_memmap_entries; x++ ) {
         switch ( boot_info->boot_memmap_addr[x].type ) {

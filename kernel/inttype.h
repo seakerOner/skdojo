@@ -17,7 +17,11 @@ typedef double                 f64;
 typedef u64                 size_t;
 typedef u8                 boolean;
 
+typedef u8                   ascii;
+
 #define NULL (void *)0
+
+#define KSTR( str ) ((u8*) str)
 
 #define FILL(ptr, c, len_bytes)             \
     do {                                    \

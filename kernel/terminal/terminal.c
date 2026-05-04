@@ -4,7 +4,7 @@
 
 void terminal_toggle_cursor( DojoTerminal* terminal ) {
     StyleColor inverted_color;
-    char c;
+    ascii c;
 
     comp_read_cell(
             terminal->frame,
@@ -24,7 +24,7 @@ void terminal_toggle_cursor( DojoTerminal* terminal ) {
             );
 }
 
-static void terminal_history_add_c( TerminalHistory* h, char c ) {
+static void terminal_history_add_c( TerminalHistory* h, ascii c ) {
     u64 max = ( u64 )h->line_len * ( u64 )h->line_capacity;
     u64 abs_idx = h->c_count++ % max;
     h->data[abs_idx] = c;
@@ -108,7 +108,7 @@ void terminal_printDEC( DojoTerminal* terminal, u64 num ) {
 }
 
 
-void terminal_putc( DojoTerminal *terminal, char c ) {
+void terminal_putc( DojoTerminal *terminal, ascii c ) {
     if ( c == '\n' ) {
         terminal_newline( terminal );
         terminal_history_add_c( &terminal->history, c );
@@ -135,7 +135,7 @@ void terminal_putc( DojoTerminal *terminal, char c ) {
     terminal->input_buffer.input_start_col = terminal->cursor_col;
 }
 
-void terminal_print( DojoTerminal* terminal, const char* string ) {
+void terminal_print( DojoTerminal* terminal, const ascii* string ) {
     while ( *string ) {
         terminal_putc( terminal, *string++ );
     }
@@ -159,7 +159,7 @@ void terminal_scroll( DojoTerminal* terminal ) {
 
     for ( u32 r = 1; r < terminal->frame->height; r++ ) {
         for ( u32 c = 0; c < terminal->frame->width; c++ ) {
-            char ch;
+            ascii ch;
             StyleColor style;
 
             comp_read_cell(
@@ -216,7 +216,7 @@ static void terminal_redraw_buffer( DojoTerminal* t ) {
             row--;
         }
 
-        char c = ( x < t->input_buffer.index )
+        ascii c = ( x < t->input_buffer.index )
             ? t->input_buffer.data[x]
             : ' ';  // clean last char
         
@@ -234,7 +234,7 @@ static void terminal_redraw_buffer( DojoTerminal* t ) {
     t->cursor_col = abs % width;
 }
 
-static inline void terminal_addto_buffer( DojoTerminal* terminal, char c ) {
+static inline void terminal_addto_buffer( DojoTerminal* terminal, ascii c ) {
     if ( terminal->input_buffer.index >= terminal->input_buffer.len ) {
         return;
     }
@@ -242,7 +242,7 @@ static inline void terminal_addto_buffer( DojoTerminal* terminal, char c ) {
     // adding inside the buffer, we must offset the content of the buffer after the cursor
     if ( terminal->input_buffer.cursor < terminal->input_buffer.index ) {
         u32 to_shift = ( terminal->input_buffer.index - terminal->input_buffer.cursor );
-        char* end    = &terminal->input_buffer.data[terminal->input_buffer.index - 1];
+        ascii* end    = &terminal->input_buffer.data[terminal->input_buffer.index - 1];
 
         for ( u32 x = 0; x < to_shift; x++ ) {
             *( end + 1 ) = *end;
@@ -327,7 +327,7 @@ void terminal_event( void* t, KeyEvent* ev ) {
                 }
                 terminal_putc( terminal, ev->ascii );
 
-                terminal_print( terminal, "BUFFER OUTPUT: " );
+                terminal_print( terminal, KSTR( "BUFFER OUTPUT: " ));
                 x = 0;
                 while ( x < terminal->input_buffer.index ) {
                     terminal_putc( terminal, terminal->input_buffer.data[x] );
@@ -380,7 +380,7 @@ static inline u64 _terminal_get_history_start( DojoTerminal* t ) {
     while ( x > 0 ) {
         x--;
 
-        char c = t->history.data[x % max];
+        ascii c = t->history.data[x % max];
 
         if ( c == '\n' ) {
             row++;
@@ -424,7 +424,7 @@ void terminal_render( void* term ) {
     // draw history
     for ( u64 i = start; i < t->history.c_count; i++ ) {
         u64 idx = i % max;
-        char c  = t->history.data[idx];
+        ascii c = t->history.data[idx];
 
         if ( c == '\n' ) {
             row++;

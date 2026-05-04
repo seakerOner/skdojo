@@ -4,8 +4,8 @@
 #include "../../../themes/themes.h"
 #include "vga.h"
 
-void driver_vga_draw_cell( void* fb, u32 row, u32 col, char c, StyleColor style );
-void driver_vga_read_cell( void* fb, u32 row, u32 col, char* out, StyleColor* style_out );
+void driver_vga_draw_cell( void* fb, u32 row, u32 col, ascii c, StyleColor style );
+void driver_vga_read_cell( void* fb, u32 row, u32 col, ascii* out, StyleColor* style_out );
 void driver_vga_clear( void* fb, const StyleColor colors ); 
 
 u64  driver_vga_framebuffer_size();

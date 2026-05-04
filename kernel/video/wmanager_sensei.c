@@ -14,7 +14,7 @@ WManagerSensei* get_wmanager_sensei() {
 // -1 if error
 i32 wmanager_create_window( u32 row, u32 col, u32 width, u32 height, VideoSensei* sensei ) {
     if ( wmanager_sensei.window_count >= MAX_WINDOWS ) {
-        printk_warn( "[KERNEL] Maximum windows reached!\n" );
+        printk_warn( KSTR( "[WM SENSEI] Maximum windows reached!\n" ));
         return -1;
     }
     u32 id = wmanager_sensei.window_count++;
@@ -38,7 +38,7 @@ DojoWindow* wmanager_get_focused() {
 
 DojoWindow* wmanager_get_window(u32 id) {
     if ( id >= MAX_WINDOWS ) {
-        printk_warn( "[Window Sensei ERROR] Out of bounds get_window()\n" );
+        printk_warn( KSTR( "[WM SENSEI] Out of bounds get_window()\n" ));
         return NULL;
     }
     return &wmanager_sensei.windows[id];

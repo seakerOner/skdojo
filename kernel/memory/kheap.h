@@ -17,7 +17,7 @@ typedef struct {
 #define CEIL_PAGES(bytes, pagesizebytes)                           \
         ((bytes / pagesizebytes) + (bytes % pagesizebytes > 0))    \
 
-void start_kheap( MemorySensei* mem_sensei );
+void  start_kheap( MemorySensei* mem_sensei );
 
 // returns NULL on failure
 void* kheap_reserve( u64 num_pages );

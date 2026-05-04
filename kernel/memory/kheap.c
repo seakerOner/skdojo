@@ -1,4 +1,5 @@
 #include "kheap.h"
+#include "kata.h"
 #include "memory_sensei.h"
 
 static KernelHeap k_heap = {0};
@@ -93,35 +94,41 @@ static int _find_realloc_pages_free( u64 ptr_idx, u64 old_num_pages, u64 num_pag
     return -1;
 }
 
+static void map_kheap() {
+    u64* free_mem = &get_mem_sensei()->kernel_info.heap_bytes_free;
+
+    u64 virt = ( u64 )k_heap.base;
+    u64 cap  = ( k_heap.capacity * KB( 4 ) ) / MB( 2 );
+
+    for (u64 x = 0; x < cap; x++) {
+        void* ptr = kata_alloc( ORDER_2MB, TRUE );
+        if ( ptr == NULL ) {
+            // TODO:
+        }
+        u64 phys  = ( u64 )VA_TO_PA( ptr );
+        map_2MB_page(virt, phys);
+        virt     += MB( 2 );
+        free_mem += MB(2);
+    }
+};
+
 void start_kheap( MemorySensei* mem_sensei ) {
     // virtual memory address
     k_heap.base             = ( u8* )( KERNEL_HEAP_START+HIGH_MEM_IDENTITY );     
-    k_heap.capacity         = mem_sensei->internal.kpage_index;
-    k_heap.page_size        = KB( 4 );
+    k_heap.page_size        = PAGE_SIZE;
+    k_heap.capacity         = KERNEL_HEAP_NUM_PAGES;
     k_heap.index            = 0;
     k_heap.first_free_index = 0;
 
     for ( u32 x = 0; x < k_heap.capacity / 8; x++ ) {
         k_heap.bitmap[x] = 0;
     }
+
+    map_kheap();
 }
 
 // returns NULL on failure
 void* kheap_reserve( u64 num_pages ) {
-    //u64 abs_idx = k_heap.index * k_heap.page_size;
-
-    // if (k_heap.index + num_pages <= k_heap.capacity) {
-    //     void* alloced_space = (void *)&k_heap.base[abs_idx];
-    //
-    //     for(u64 x = 0; x < num_pages; x++)
-    //         bitmap_set(k_heap.index+x);
-    //
-    //     k_heap.index += num_pages;
-    //     get_mem_sensei()->kernel_info.heap_bytes_used += (num_pages * k_heap.page_size);
-    //     get_mem_sensei()->kernel_info.heap_bytes_free -= (num_pages * k_heap.page_size);
-    //     return alloced_space;
-    // }
-
     int start = _find_free_pages( num_pages );
     if ( start < 0 )
         return NULL;

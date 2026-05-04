@@ -2,6 +2,7 @@
 
 #include "interrupts/k_interrupts.h"
 #include "inttype.h"
+#include "memory/kata.h"
 #include "terminal/terminal.h"
 #include "themes/themes.h"
 
@@ -17,6 +18,7 @@
 void kmain( BiosBootInfo* boot_info ) {
     MemorySensei* sensei_mem = create_memory_sensei( boot_info );
     kata_populate_regions( boot_info );  // ^^ populate kata in mem sensei
+    start_kheap( sensei_mem );
 
     init_interrupts_x86();
 
@@ -28,7 +30,6 @@ void kmain( BiosBootInfo* boot_info ) {
 
     dojo_set_theme( THEME_DARKMODE );
     DojoTatami* tatami = tatami_start();
-    while ( 1 );
     CompWinFrame* root_win_frame = compositor_create_frame_current_row( tatami->cmp_sensei );
     CompWinFrame* second_win_frame = compositor_create_frame_current_row( tatami->cmp_sensei );
 

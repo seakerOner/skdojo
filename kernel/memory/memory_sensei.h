@@ -6,7 +6,6 @@
  * This memory subsystem bootstraps paging using a temporary identity map
  * while simultaneously constructing the kernel higher-half mapping.
  *
- * Core design principle:
  * - Page tables are shared between identity-mapped VA and higher-half VA
  *   during early boot, allowing a PIC kernel to safely configure memory
  *   without relocation complexity.
@@ -24,11 +23,6 @@
  * keeps early paging setup minimal while maintaining full control.
  */
 
-// TODO: Using a ultra naive way to align memory ranges from boot_info and mapping them to the PML4, 
-// leaving memory that could be used simply being ignored.
-//
-// This could be easily optimized after memory model is stabilized
-
 #include "../inttype.h"
 #include "kata.h"
 #include "../bios_boot_info.h"
@@ -40,7 +34,7 @@
 #define BOOT_INFO_ADDR      0x50000
 #define CPU_STACK           0x90000 
 
-#define PAGE_SIZE   (4 * 1024)
+#define PAGE_SIZE ( KB( 4 ) )
 #define PAGE_ENTRIES 512        
 
 // high memory addr where all physical RAM will be virtualized 
@@ -59,7 +53,8 @@
 
 // address used to bootstrap, kernel must access this address with (HEAP + HIGH_MEM_IDENTITY)
 #define KERNEL_HEAP_START   0x200000
-#define KERNEL_HEAP_LEN  (0x01000000 - 0x00200000)   // bytes (14MB)
+// must be 2MB multiple
+#define KERNEL_HEAP_LEN  ( MB( 14 ) )   // bytes (14MB)
                                                      
 
 #define KERNEL_HEAP_NUM_PAGES (KERNEL_HEAP_LEN / PAGE_SIZE)
@@ -162,6 +157,7 @@ typedef struct {
    u64 heap_bytes_used;
    u64 heap_bytes_free;
 
+   u64 heap_page_max;
    u64 heap_pages_hanged;
    FailedPages hanged_pages[KERNEL_HEAP_NUM_PAGES];
 } MemoryKernelInfo;
@@ -176,17 +172,9 @@ typedef struct {
     } while (0);                                                                                        \
 
 typedef struct {
-    u64 pd_index;
-    u64 kpage_index;
-    u64 kpage_max;
-    u64 kpages[KERNEL_HEAP_NUM_PAGES];
-} InternalMemSensei;
-
-typedef struct {
     KataAllocator* kata;
     MemoryPhyInfo physical_stats;
     MemoryKernelInfo kernel_info;
-    InternalMemSensei internal;
 }  MemorySensei;
 
 // since the Kernel is PIC, global variables use RIP relative addressing and since the kernel 
@@ -195,7 +183,6 @@ typedef struct {
 // A work around is grabbing the "_bootstrap_start" symbol provided by the linker and aliase the structures we want.
 // This allows to bypass the compiler assumptions about RIP relative addressing
 typedef struct {
-    PtTable __attribute__(( aligned( KB( 4 ) ))) heap_pts[PT_TABLES_FOR_KHEAP];
     PdptTable __attribute__(( aligned( KB( 4 ) ))) physmap_pdpt;
     PdTable __attribute__(( aligned( KB( 4 ) ))) physmap_pds[128];     // 128GB max physical map
 } BootstrapLayout;
@@ -203,7 +190,8 @@ typedef struct {
 MemorySensei* create_memory_sensei(BiosBootInfo* boot_info);
 MemorySensei* get_mem_sensei();
 
-void map_2MB_page(u64 virt, u64 phys);
+void map_4KB_page( u64 virt, u64 phys );
+void map_2MB_page( u64 virt, u64 phys );
 
 BootstrapLayout* get_bootstrap();
 

@@ -3,11 +3,6 @@
 
 static KataAllocator kata_allocator = {0};
 
-/* 
- * TODO: Since we store the metadata of kata inside the actual blocks and skip it when returning 
- * the address to the callee. It's not suitable for new pml4 tables
- * */
-
 KataAllocator* kata_init() {
     kata_allocator.max_orders = MAX_ORDER;
     FILL( kata_allocator.free_lists, 0, sizeof( kata_allocator.free_lists ));
@@ -38,6 +33,7 @@ void kata_populate_regions( BiosBootInfo* boot_info ) {
     }
 }
 
+// addr must be PA
 void kata_add_region( u64 addr, u64 size ) {
     while ( size > 0 ) {
         u64 order = MAX_ORDER;
@@ -58,6 +54,7 @@ void kata_add_region( u64 addr, u64 size ) {
     }
 }
 
+// addr must be PA
 void kata_add_block( u64 addr, u32 order ) {
     KataBlock* block        = ( KataBlock* ) PA_TO_VA( addr );
     KataAllocator* ka       = &kata_allocator;
@@ -67,7 +64,8 @@ void kata_add_block( u64 addr, u32 order ) {
     ka->free_lists[order]   = block;
 }
 
-void* kata_alloc( u64 order ) {
+// returns VA address
+void* kata_alloc( u64 order, boolean raw_mode ) {
     KataAllocator* ka = &kata_allocator;
 
     for ( u32 x = order; x <= ka->max_orders; x++ ) {
@@ -89,15 +87,18 @@ void* kata_alloc( u64 order ) {
             kata_add_block( split_blk_addr, x );
         }
 
-        u8* ptr     = ( u8* ) blk;
-        ptr += sizeof( KataBlock );     // skip metadata
+        u8* ptr = ( u8* ) blk;
 
-        return ( void * )ptr;
+        if (!raw_mode) 
+            ptr += sizeof( KataBlock );     // skip metadata
+
+        return ptr;
     }
 
     return NULL;
 }
 
+// addr must be VA
 void kata_free( u64 addr ) {
     KataAllocator* ka   =  &kata_allocator;
     KataBlock* blk      = ( KataBlock* )( ( u8* )addr - sizeof( KataBlock ) );
@@ -145,4 +146,17 @@ void kata_free( u64 addr ) {
     }
 
     kata_add_block( p_addr, order );
+}
+
+// addr must be VA
+void kata_free_raw( u64 addr, u32 order ) {
+    // restore metadata
+    KataBlock* blk  = ( KataBlock* )addr;
+    FILL( blk, 0, sizeof( KataBlock ) );
+    blk->order      = order;
+
+    // `kata_free` expects `addr` to be after metadata
+    addr = ( u64 )(( u8* )addr + sizeof( KataBlock ));
+
+    kata_free( addr );
 }

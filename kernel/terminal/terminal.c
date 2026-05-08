@@ -33,6 +33,7 @@ static void terminal_history_add_c( TerminalHistory* h, ascii c ) {
 DojoTerminal* terminal_new( CompWinFrame* frame, DojoTerminal* t ) {
     if ( !t ) return NULL;
 
+    DojoProcessSpawnConfig cfg;
     DojoProcess* p = processes_sensei_new_handle();
     if ( p == NULL ) {
         return NULL;
@@ -52,16 +53,24 @@ DojoTerminal* terminal_new( CompWinFrame* frame, DojoTerminal* t ) {
     if ( !t->history.data )
         return NULL;
 
-    //FILL(t->history.data, 0, pages * KB(4));
+    FILL(t->history.data, 0, pages * KB(4));
 
     t->frame                        = frame;
     t->frame->process               = p;
 
-    t->frame->process->state        = PROCESS_RUNNING;
-    t->frame->process->app_data     = t;
-    t->frame->process->on_resize    = ( void * )terminal_on_resize;
-    t->frame->process->on_event     = ( void * )terminal_event;
-    t->frame->process->on_destroy   = ( void * )terminal_destroy;
+    cfg.type       = NATIVE_PROC;
+    // cfg.app_data   = t;
+    // cfg.on_resize  = ( void * )terminal_on_resize;
+    // cfg.on_event   = ( void * )terminal_event;
+    // cfg.on_destroy = ( void * )terminal_destroy;
+
+    DojoProcess* proc = process_spawn(&cfg);
+    t->frame->process = p;
+    // t->frame->process->state        = PROC_RUNNING;
+    // t->frame->process->app_data     = t;
+    // t->frame->process->on_resize    = ( void * )terminal_on_resize;
+    // t->frame->process->on_event     = ( void * )terminal_event;
+    // t->frame->process->on_destroy   = ( void * )terminal_destroy;
 
     t->cursor_char                  = theme->cursor;
     t->cursor_row                   = 0;

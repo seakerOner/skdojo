@@ -538,43 +538,6 @@ void compositor_destroy_focused_frame( CompositorSensei *c_sensei ) {
     comp_draw_borders( c_sensei );
 }
 
-u32 compositor_poll( CompositorSensei* c_sensei, KeyEvent* ev ) {
-    if ( ev->pressed && ev->key == KEY_ENTER && ev->shift && ev->super ) {
-        compositor_create_frame_current_row( c_sensei );
-        return 1;
-    }
-    if ( ev->pressed && ev->key == KEY_N && ev->shift && ev->super ) {
-        compositor_create_frame_new_row( c_sensei );
-        return 1;
-    }
-    if ( ev->pressed && ev->key == KEY_Q && ev->shift && ev->super ) {
-        compositor_destroy_focused_frame( c_sensei );
-        return 1;
-    }
-
-    //
-    // move focused frame
-    //
-    if ( ev->pressed && ev->key == KEY_H && ev->shift && ev->super ) {
-        compositor_focus_left( c_sensei );
-        return 1;
-    }
-    if ( ev->pressed && ev->key == KEY_J && ev->shift && ev->super ) {
-        compositor_focus_down(c_sensei);
-        return 1;
-    }
-    if ( ev->pressed && ev->key == KEY_K && ev->shift && ev->super ) {
-        compositor_focus_up( c_sensei );
-        return 1;
-    }
-    if ( ev->pressed && ev->key == KEY_L && ev->shift && ev->super ) {
-        compositor_focus_right( c_sensei );
-        return 1;
-    }
-
-    return 0;
-}
-
 void comp_draw_cell( CompWinFrame* frame, u32 row, u32 col, ascii c, StyleColor style ) {
     get_video_sensei()->driver.draw_cell( frame->parent_window->framebuffer, 
                                                 row + frame->start_height,

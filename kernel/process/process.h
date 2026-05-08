@@ -2,8 +2,42 @@
 #define PROCESS_H
 
 #include "../keyboard/keyboard_sensei.h"
+#include "../bios_boot_info.h"
+
+#define MAX_PROCESS_EVENTS 162
+
+typedef enum {
+    DJ_EVENT_NONE = 0,
+
+    DJ_EVENT_KEYBOARD,
+    DJ_EVENT_WINDOW_RESIZE,
+    DJ_EVENT_WINDOW_CLOSE,
+
+    DJ_EVENT_PROCESS_MESSAGE,
+
+    DJ_EVENT_TIMER,
+} DojoEventType;
 
 typedef struct {
+    DojoEventType type;
+
+    union {
+        KeyEvent keyboard;
+
+        struct {
+            u32 width;
+            u32 height;
+        } resize;
+
+        struct {
+            u64 from_pid;
+            void* data;
+        } message;
+    };
+} DojoEvent;
+
+typedef struct {
+    u64 ip;
     u64 rax;
     u64 rbx;
     u64 rcx;
@@ -16,30 +50,46 @@ typedef struct {
 } CPUContext;
 
 typedef enum {
-    PROCESS_RUNNING,
-    PROCESS_SLEEPING,
-    PROCESS_DEAD
+    PROC_RUNNING,
+    PROC_SLEEPING,
+    PROC_DEAD
 } ProcessState;
 
-typedef struct {
+typedef enum {
+    NATIVE_PROC,
+    FORTH_PROC,
+} ProcessType;
+
+typedef struct DojoProcess_t DojoProcess;
+
+typedef void (*ProcessEntry)(DojoProcess* self);
+
+typedef struct DojoProcess_t {
     u64          pid;
+
     ProcessState state;
-    void*        app_data;
+    ProcessType  type;
 
-    // void (*on_start)(void *);
-    void ( *on_event   )( void*, KeyEvent* );
-    void ( *on_update  )( void* );
-    void ( *on_resize  )( void* app, u32 new_w, u32 new_h );
-    void ( *on_destroy )( void* );
+    ProcessEntry entry;
+    void *stack;
 
-    // TODO:
-    //
-    // void (*entry)(void);
-    // void *stack;
-    // CPUContext cpu_ctx;
+    CPUContext cpu_ctx;
+    // Pml4Table* pml4;
 
-    //void (*on_render)(void*);
-    //void (*on_destroy)(void*);
+    DojoEvent events[MAX_PROCESS_EVENTS];
+    u64 event_read;
+    u64 event_write;
+
 } DojoProcess;
+
+typedef struct {
+    ProcessType type;
+    ProcessEntry entry;
+} DojoProcessSpawnConfig;
+
+boolean dojo_process_push_event(DojoProcess* process, DojoEvent* event);
+boolean dojo_process_pop_event(DojoProcess* process, DojoEvent* event);
+
+void dojo_dispatch_event(DojoProcess* process, DojoEvent* event);
 
 #endif

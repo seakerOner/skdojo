@@ -29,6 +29,12 @@ typedef u8                   ascii;
             *(((u8*)ptr)+x) = c;            \
     } while (0);
 
+#define COPY(old_ptr, new_ptr, len_bytes)               \
+    do {                                                \
+        for (u64 x = 0; x < len_bytes; x++)             \
+            *(((u8*)new_ptr)+x) = *(((u8*)old_ptr)+x);  \
+    } while (0);                                        \
+
 #define ALIGN_UP(addr, a) (((addr) + (a-1)) & ~(a-1))
 #define ALIGN_DOWN(addr, a) ((addr) & ~(a-1))
 

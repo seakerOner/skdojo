@@ -89,9 +89,6 @@ void compositor_focus_right( CompositorSensei* c_sensei );
 CompWinFrame* compositor_get_focused_frame( CompositorSensei* c_sensei );
 void          compositor_destroy_focused_frame( CompositorSensei* c_sensei );
 
-// 1 -> polled | 0 ->ignored
-u32 compositor_poll( CompositorSensei* c_sensei, KeyEvent* ev );
-
 void comp_draw_cell( CompWinFrame* frame, u32 row, u32 col, ascii c, StyleColor style );
 void comp_read_cell( CompWinFrame* frame, u32 row, u32 col, ascii* out, StyleColor* style_out );
 void comp_clear    ( CompWinFrame* frame, const StyleColor colors );

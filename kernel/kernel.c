@@ -1,5 +1,6 @@
 #include "./bios_boot_info.h"
 
+#include "event_router/event_router.h"
 #include "interrupts/k_interrupts.h"
 #include "inttype.h"
 #include "memory/kata.h"
@@ -28,16 +29,23 @@ void kmain( BiosBootInfo* boot_info ) {
 
     // everything below this line must be modularized
 
+    DojoProcessSpawnConfig tatami_cfg = {
+        .entry = tatami_main,
+        .type  = NATIVE_PROC
+    };
     dojo_set_theme( THEME_DARKMODE );
-    DojoTatami* tatami = tatami_start();
-    CompWinFrame* root_win_frame = compositor_create_frame_current_row( tatami->cmp_sensei );
-    CompWinFrame* second_win_frame = compositor_create_frame_current_row( tatami->cmp_sensei );
 
+    DojoProcess* p_tatami = process_spawn(&tatami_cfg);
+
+    init_event_router( p_tatami->pid );
+
+    CompWinFrame* root_win_frame   = compositor_create_frame_current_row( tatami->cmp_sensei );
+    CompWinFrame* second_win_frame = compositor_create_frame_current_row( tatami->cmp_sensei );
 
     if ( !root_win_frame || !second_win_frame )
         while (1);  // hang
 
-    DojoTerminal root_terminal = {0};
+    DojoTerminal root_terminal   = {0};
     terminal_new( root_win_frame, &root_terminal );
     DojoTerminal second_terminal = {0};
     terminal_new( second_win_frame, &second_terminal );
@@ -48,44 +56,8 @@ void kmain( BiosBootInfo* boot_info ) {
     terminal_print( &root_terminal, KSTR( "Welcome to the Dojo!\n>Using Tatami\nContact: seakerone@proton.me\n\n"  ));
     terminal_putc( &root_terminal, '>' );
 
-    terminal_print( &second_terminal, KSTR( "Using VGA text mode \n" ));
-    terminal_print( &second_terminal, KSTR( ">PHYSICAL RAM STATS:\n" ));
-    terminal_print( &second_terminal, KSTR( "- [USABLE] ~" ));
-    terminal_printDEC( &second_terminal, sensei_mem->physical_stats.bytes_usable/MB(1) );
-    terminal_print( &second_terminal, KSTR( "MB" ));
-    terminal_print( &second_terminal, KSTR( " [RESERVED] ~" ));
-    terminal_printDEC( &second_terminal, sensei_mem->physical_stats.bytes_reserved/KB(1) );
-    terminal_print( &second_terminal, KSTR( "KB\n" ));
-    terminal_print( &second_terminal, KSTR( "- [BAD]    ~" ));
-    terminal_printDEC( &second_terminal, sensei_mem->physical_stats.bytes_bad_mem/KB(1) );
-    terminal_print( &second_terminal, KSTR( "KB\n" ));
-
-    terminal_print( &second_terminal, KSTR( ">KERNEL HEAP MEM STATS:\n" ));
-    terminal_print( &second_terminal, KSTR( "- [CAPACITY] ~" ));
-    terminal_printDEC( &second_terminal, sensei_mem->kernel_info.heap_bytes_cap/MB(1) );
-    terminal_print( &second_terminal, KSTR( "MB" ));
-    terminal_print( &second_terminal, KSTR( " [FREE] ~" ));
-    terminal_printDEC( &second_terminal, sensei_mem->kernel_info.heap_bytes_free/MB(1) );
-    terminal_print( &second_terminal, KSTR( "MB\n" ));
-    terminal_print( &second_terminal, KSTR( "- [USED]     ~" ));
-    terminal_printDEC( &second_terminal, sensei_mem->kernel_info.heap_bytes_used/KB(1) );
-    terminal_print( &second_terminal, KSTR( "KB\n" ));
-    terminal_print( &second_terminal, KSTR( "- PAGES HANGED:     " ));
-    terminal_printDEC( &second_terminal, sensei_mem->kernel_info.heap_pages_hanged );
-
-    terminal_print( &second_terminal,KSTR( "\n>Senseis activated:\n"
-            "- Memory Sensei\n"
-            "- Video Sensei\n"
-            "- Window Manager Sensei\n"
-            "- Compositor Sensei\n"
-            "- Keyboard Sensei\n"
-            "- Processes Sensei\n"
-            "- Time Sensei\n"
-            "\n" ));
-    terminal_putc( &second_terminal, '>' );
-
     while ( 1 ) {
-        tatami_poll( tatami->cmp_sensei );
+        event_router_poll();
 
         // TODO: upgrade to a scheduler 
         processes_update();

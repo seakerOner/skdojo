@@ -13,7 +13,12 @@ typedef struct {
 
 void create_processes_sensei();
 
+DojoProcess* process_spawn( DojoProcessSpawnConfig* cfg );
+
+ProcessesSensei* get_processes_sensei();
+
 DojoProcess* processes_sensei_new_handle();
+DojoProcess* processes_get(u64 pid);
 
 void processes_update();
 

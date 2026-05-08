@@ -7,6 +7,17 @@ void create_processes_sensei() {
     processes_sensei.count    = 0;
 }
 
+ProcessesSensei* get_processes_sensei() {
+    return &processes_sensei;
+}
+
+DojoProcess* processes_get(u64 pid) {
+    if ( pid >= processes_sensei.count )
+        return NULL;
+
+    return &processes_sensei.processes[pid];
+}
+
 DojoProcess* processes_sensei_new_handle() {
     if ( processes_sensei.count >= processes_sensei.capacity ) {
         return NULL;
@@ -17,9 +28,24 @@ DojoProcess* processes_sensei_new_handle() {
     return proc;
 }
 
+DojoProcess* process_spawn( DojoProcessSpawnConfig* cfg ) {
+    DojoProcess* proc = processes_sensei_new_handle();
+    if ( proc == NULL )
+        return NULL;
+
+    proc->type       = cfg->type;
+    proc->entry      = cfg->entry;
+
+    return proc;
+}
+
 void processes_update() {
     for ( u64 x = 0; x < processes_sensei.count; x++ ) {
-        if ( processes_sensei.processes[x].on_update )
-            processes_sensei.processes[x].on_update( processes_sensei.processes[x].app_data );
+        DojoProcess* proc = &processes_sensei.processes[x];
+
+        if ( proc->state != PROC_RUNNING )
+            continue;
+
+        proc->entry( proc );
     }
 }

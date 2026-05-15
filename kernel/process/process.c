@@ -7,7 +7,9 @@ boolean dojo_process_push_event(DojoProcess* process, DojoEvent* event) {
     u64 write_idx = process->event_write;
     u64 abs_idx = write_idx % MAX_PROCESS_EVENTS;
 
-    COPY(event, (&process->events[abs_idx]) , sizeof( DojoEvent ));
+    DojoEvent* pushd_ev = &process->events[abs_idx];
+
+    COPY( event, pushd_ev , sizeof( DojoEvent ) );
     process->event_write++;
 
     return TRUE;

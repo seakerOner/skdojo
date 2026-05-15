@@ -3,7 +3,10 @@
 static PrintkBuffer printk_buffer = {0};
 
 void printk_init() {
-    printk_buffer.data     = ( ascii* )kata_alloc(PRINTK_BUF_DYN_ORDER, TRUE);
+    void* ptr = kata_alloc(PRINTK_BUF_DYN_ORDER, TRUE);
+    if (ptr == NULL)
+        while (1);
+    printk_buffer.data     = ( ascii* )ptr;
     printk_buffer.capacity = KB(4) << PRINTK_BUF_DYN_ORDER;
     printk_buffer.idx      = 0;
 }

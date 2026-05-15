@@ -6,7 +6,7 @@
 #define MAX_PROCESSES 16
 
 typedef struct {
-    DojoProcess processes[MAX_PROCESSES];
+    DojoProcess* processes[MAX_PROCESSES];
     u64 count;
     u64 capacity;
 } ProcessesSensei;

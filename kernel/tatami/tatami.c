@@ -26,15 +26,49 @@ DojoTatami* tatami_start( u64 pid ) {
     return &dojotatami;
 }
 
-boolean tatami_poll_global_shortcuts( CompositorSensei* c_sensei, KeyEvent* ev ) {
+boolean tatami_poll_global_shortcuts( DojoProcess* self, CompositorSensei* c_sensei, KeyEvent* ev ) {
     // create a new frame on current row
     if ( ev->pressed && ev->key == KEY_ENTER && ev->shift && ev->super ) {
-        compositor_create_frame_current_row( c_sensei );
+        CompWinFrame* f = compositor_create_frame_current_row( c_sensei );
+
+        // create a new terminal
+        DojoProcessSpawnConfig cfg = {0};
+        terminal_new_proc_cfg( &cfg );
+        DojoProcess* t_proc = process_spawn(&cfg);
+
+        DojoEvent msg = {
+            .type = DJ_EVENT_PROCESS_MESSAGE,
+            .message = {
+                .from_pid = self->pid,
+                // TODO: with different PML4 we need a shared memory resource
+                .data     = ( void * )f,
+            }
+        };
+
+        dojo_process_push_event(t_proc, &msg);
+
         return 1;
     }
     // create frame on new row
     if ( ev->pressed && ev->key == KEY_N && ev->shift && ev->super ) {
-        compositor_create_frame_new_row( c_sensei );
+        CompWinFrame* f = compositor_create_frame_new_row( c_sensei );
+
+        // create a new terminal
+        DojoProcessSpawnConfig cfg = {0};
+        terminal_new_proc_cfg( &cfg );
+        DojoProcess* t_proc = process_spawn(&cfg);
+
+        DojoEvent msg = {
+            .type = DJ_EVENT_PROCESS_MESSAGE,
+            .message = {
+                .from_pid = self->pid,
+                // TODO: with different PML4 we need a shared memory resource
+                .data     = ( void * )f,
+            }
+        };
+
+        dojo_process_push_event(t_proc, &msg);
+
         return 1;
     }
     // delete focused frame
@@ -51,7 +85,7 @@ boolean tatami_poll_global_shortcuts( CompositorSensei* c_sensei, KeyEvent* ev )
         return 1;
     }
     if ( ev->pressed && ev->key == KEY_J && ev->shift && ev->super ) {
-        compositor_focus_down(c_sensei);
+        compositor_focus_down( c_sensei );
         return 1;
     }
     if ( ev->pressed && ev->key == KEY_K && ev->shift && ev->super ) {
@@ -73,25 +107,64 @@ void tatami_handle_event( DojoProcess* self, DojoEvent* ev ) {
     // everything
     //
     //u32 f_window_id = wmanager_get_focused()->id;
-
-    if (ev->type != DJ_EVENT_KEYBOARD)
-        return;
-
-    KeyEvent key_ev = ev->keyboard;
-    CompositorSensei* cmp_sensei = dojotatami.cmp_sensei;
     
-    if ( tatami_poll_global_shortcuts( cmp_sensei, &key_ev ) )
-            return;
-        
-    CompWinFrame* focused_frame = compositor_get_focused_frame( cmp_sensei );
+    CompositorSensei* cmp_sensei = dojotatami.cmp_sensei;
 
-    dojo_process_push_event(focused_frame->process, ev);
+    switch ( ev->type ) {
+        case DJ_EVENT_KEYBOARD: {
+            KeyEvent key_ev = ev->keyboard;
+            if ( tatami_poll_global_shortcuts( self , cmp_sensei, &key_ev ) )
+                return;
+
+            CompWinFrame* focused_frame = compositor_get_focused_frame( cmp_sensei );
+
+            dojo_process_push_event(focused_frame->process, ev);
+
+            break;
+        };
+        default:
+            break;
+    }
 }
 
 void tatami_main( DojoProcess* self ) {
-    tatami_start( self->pid );
+    static boolean initialized = FALSE;
 
-    while (1) {
+    if ( !initialized ) {
+        tatami_start( self->pid );
+
+        dojo_set_theme( THEME_DARKMODE );
+        CompWinFrame* root_win_frame   = compositor_create_frame_current_row( dojotatami.cmp_sensei );
+
+        DojoProcessSpawnConfig term_cfg;
+        terminal_new_proc_cfg( &term_cfg );
+        DojoProcess* term_proc =  process_spawn( &term_cfg );
+
+        DojoEvent msg = {
+            .type = DJ_EVENT_PROCESS_MESSAGE,
+            .message = {
+                .from_pid = self->pid,
+                .to_pid   = term_proc->pid,
+                // TODO: with different PML4 we need a shared memory resource
+                .data     = ( void * )root_win_frame,
+            }
+        };
+
+        event_router_dispatch_event( &msg );
+
+        //dojo_process_push_event( term_proc, &msg );
+
+        compositor_focus_frame( dojotatami.cmp_sensei, 0 );
+
+        // terminal_print( &root_terminal, KSTR( "Welcome to the Dojo!\n>Using Tatami\nContact: seakerone@proton.me\n\n"  ));
+        // terminal_putc( &root_terminal, '>' );
+
+        initialized = TRUE;
+
+    }
+
+
+    // while (1) {
         DojoEvent ev;
 
         while ( dojo_process_pop_event( self, &ev ) ) 
@@ -99,5 +172,5 @@ void tatami_main( DojoProcess* self ) {
 
         // TODO:
         // scheduler_yield();
-    }
+    // }
 }

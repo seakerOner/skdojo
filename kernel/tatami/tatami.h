@@ -17,7 +17,6 @@ typedef struct {
 void tatami_main( DojoProcess* proc );
 
 DojoTatami* tatami_start( u64 pid );
-
 void tatami_poll(); 
 
 #endif

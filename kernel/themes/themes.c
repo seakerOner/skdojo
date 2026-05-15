@@ -87,6 +87,7 @@ static inline void set_vga_theme() {
 void dojo_set_theme( ThemesNames theme ) {
     dojo_theme.name = theme;
 
+    // TODO: 
     set_vga_theme();
 }
 

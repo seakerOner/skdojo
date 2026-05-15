@@ -1,6 +1,7 @@
 #include "./compositor_sensei.h"
 #include "video_sensei.h"
 #include "wmanager_sensei.h"
+#include "../process/processes_sensei.h"
 
 static CompositorSensei compositor_sensei = {0};
 
@@ -431,8 +432,16 @@ void comp_update_grid( CompositorSensei* c_sensei ) {
         frame->height         = abs_height - 2;
 
         comp_clear( frame, dojo_get_theme()->palette.main_colors ); // ensure no artifacts
-        if ( frame->process && frame->process->on_resize )
-            frame->process->on_resize( frame->process->app_data, frame->width, frame->height );
+        if (frame->process) {
+            DojoEvent ev = {
+                .type   = DJ_EVENT_WINDOW_RESIZE,
+                .resize = {
+                    .width  = frame->width,
+                    .height = frame->height,
+                },
+            };
+            dojo_process_push_event( frame->process, &ev );
+        }
     }
 
 }
@@ -508,8 +517,10 @@ void compositor_destroy_focused_frame( CompositorSensei *c_sensei ) {
     comp_clear( fframe, dojo_get_theme()->palette.main_colors );
 
     // let process terminate inside frame 
-    if ( fframe->process && fframe->process->on_destroy )
-        fframe->process->on_destroy( fframe->process->app_data );
+    DojoEvent ev = {
+        .type = DJ_EVENT_WINDOW_CLOSE,
+    };
+    dojo_process_push_event( fframe->process, &ev );
 
     if ( c_sensei->grid.curr_cols_in_row[fn.row] > 1 ) {  // remove a col in the current row
         _shift_curr_cols_left( c_sensei, fn.col );
@@ -524,7 +535,7 @@ void compositor_destroy_focused_frame( CompositorSensei *c_sensei ) {
     c_sensei->frame_count--;
 
     FILL( ( u8* )&c_sensei->nodes[frame_id], 0, sizeof( CompGridNode ) );
-    FILL(( u8* )&c_sensei->win_frame[frame_id], 0, sizeof( CompWinFrame ) );
+    FILL( ( u8* )&c_sensei->win_frame[frame_id], 0, sizeof( CompWinFrame ) );
 
     u32 new_focus = 1;
     for ( u32 x = MAX_WINDOWS - 1; x > 0; x-- ) 

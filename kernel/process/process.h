@@ -4,7 +4,7 @@
 #include "../keyboard/keyboard_sensei.h"
 #include "../bios_boot_info.h"
 
-#define MAX_PROCESS_EVENTS 162
+#define MAX_PROCESS_EVENTS 161
 
 typedef enum {
     DJ_EVENT_NONE = 0,
@@ -31,6 +31,7 @@ typedef struct {
 
         struct {
             u64 from_pid;
+            u64 to_pid;
             void* data;
         } message;
     };
@@ -66,6 +67,7 @@ typedef void (*ProcessEntry)(DojoProcess* self);
 
 typedef struct DojoProcess_t {
     u64          pid;
+    ascii   name[20];
 
     ProcessState state;
     ProcessType  type;
@@ -83,13 +85,12 @@ typedef struct DojoProcess_t {
 } DojoProcess;
 
 typedef struct {
-    ProcessType type;
-    ProcessEntry entry;
+    ProcessType         type;
+    ProcessEntry       entry;
+    ascii           name[20];
 } DojoProcessSpawnConfig;
 
 boolean dojo_process_push_event(DojoProcess* process, DojoEvent* event);
 boolean dojo_process_pop_event(DojoProcess* process, DojoEvent* event);
-
-void dojo_dispatch_event(DojoProcess* process, DojoEvent* event);
 
 #endif

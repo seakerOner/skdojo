@@ -30,14 +30,9 @@ static void terminal_history_add_c( TerminalHistory* h, ascii c ) {
     h->data[abs_idx] = c;
 }
 
-DojoTerminal* terminal_new( CompWinFrame* frame, DojoTerminal* t ) {
+DojoTerminal* terminal_new( CompWinFrame* frame, DojoTerminal* t, DojoProcess* self ) {
     if ( !t ) return NULL;
 
-    DojoProcessSpawnConfig cfg;
-    DojoProcess* p = processes_sensei_new_handle();
-    if ( p == NULL ) {
-        return NULL;
-    }
     *t = ( DojoTerminal ){0};
 
     const DojoTheme* theme = dojo_get_theme();
@@ -50,27 +45,14 @@ DojoTerminal* terminal_new( CompWinFrame* frame, DojoTerminal* t ) {
     u64 pages = CEIL_PAGES( size, KB( 4 ) );
     t->history.alloced_pages = pages;
     t->history.data = kheap_reserve( pages );
+
     if ( !t->history.data )
         return NULL;
 
     FILL(t->history.data, 0, pages * KB(4));
 
     t->frame                        = frame;
-    t->frame->process               = p;
-
-    cfg.type       = NATIVE_PROC;
-    // cfg.app_data   = t;
-    // cfg.on_resize  = ( void * )terminal_on_resize;
-    // cfg.on_event   = ( void * )terminal_event;
-    // cfg.on_destroy = ( void * )terminal_destroy;
-
-    DojoProcess* proc = process_spawn(&cfg);
-    t->frame->process = p;
-    // t->frame->process->state        = PROC_RUNNING;
-    // t->frame->process->app_data     = t;
-    // t->frame->process->on_resize    = ( void * )terminal_on_resize;
-    // t->frame->process->on_event     = ( void * )terminal_event;
-    // t->frame->process->on_destroy   = ( void * )terminal_destroy;
+    t->frame->process               = self;
 
     t->cursor_char                  = theme->cursor;
     t->cursor_row                   = 0;
@@ -458,4 +440,53 @@ void terminal_render( void* term ) {
     terminal_redraw_buffer( t );
 
     terminal_toggle_cursor( t );
+}
+
+void terminal_new_proc_cfg( DojoProcessSpawnConfig* cfg ) {
+    cfg->type  = NATIVE_PROC;
+    cfg->entry = main_terminal;
+    ascii term_name[8] = "DojoTerm";
+    COPY(term_name, cfg->name, sizeof( term_name ) );
+}
+
+static void terminal_handle_event( DojoTerminal* t, DojoEvent* ev ) {
+    switch ( ev->type ) {
+        case DJ_EVENT_WINDOW_RESIZE: {
+            terminal_on_resize( ( void* ) t, ev->resize.width, ev->resize.height );
+            break;
+        };
+        case DJ_EVENT_WINDOW_CLOSE: {
+            terminal_destroy( ( void* ) t );
+            break;
+        };
+        case DJ_EVENT_KEYBOARD: {
+            terminal_event( ( void* ) t, &ev->keyboard);
+            break;
+        };
+        default:
+            break;
+    }
+}
+
+void main_terminal( DojoProcess* self ) {
+    static boolean initialized = FALSE;
+    static DojoTerminal t = {0};
+    static CompWinFrame* self_frame = NULL;
+
+    if ( !initialized ) {
+        DojoEvent msg;
+        while ( dojo_process_pop_event( self, &msg ) ) 
+            if ( msg.type == DJ_EVENT_PROCESS_MESSAGE ) {
+                self_frame = ( CompWinFrame* )msg.message.data;
+                terminal_new( self_frame, &t, self);
+                initialized = TRUE;
+            }
+    }
+
+    DojoEvent ev;
+
+    //while ( 1 ) {
+        while ( dojo_process_pop_event( self, &ev ) ) 
+            terminal_handle_event( &t, &ev );
+    //}
 }

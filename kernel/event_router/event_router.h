@@ -17,6 +17,6 @@ void init_event_router( u64 tatami_pid );
 void event_router_poll();
 
 EventRouter* get_event_router();
-void event_router_dispatch_event( EventRouter* r, DojoEvent* ev );
+void event_router_dispatch_event( DojoEvent* ev );
 
 #endif

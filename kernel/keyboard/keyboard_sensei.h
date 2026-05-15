@@ -2,7 +2,9 @@
 #define KEYBOARD_SENSEI_H
 
 #include "../inttype.h"
-#define MAX_KEYBOARD_EVENTS 128
+#include "../memory/kata.h"
+
+#define MAX_KEYBOARD_EVENTS_ORDER ORDER_8KB
 
 typedef enum {
     KEY_NONE = 0,
@@ -50,10 +52,14 @@ typedef struct {
 } KeyEvent;
 
 typedef struct {
-    KeyEvent event_stack[MAX_KEYBOARD_EVENTS];
-    u64 index;
-    u64 stack_capacity;
+    KeyEvent* events;
+    u64 head;
+    u64 tail;
+    u64 count;
+    u64 capacity;
 } KeyboardSensei;
+
+void keyboard_sensei_init();
 
 KeyboardSensei* get_keyboard_sensei();
 

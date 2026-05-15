@@ -46,7 +46,8 @@ typedef struct {
     DojoTerminal terminal;
 } TerminalProcess;
 
-DojoTerminal* terminal_new( CompWinFrame* frame, DojoTerminal* t );
+DojoTerminal* terminal_new( CompWinFrame* frame, DojoTerminal* t, DojoProcess* self );
+    //DojoTerminal* terminal_new( CompWinFrame* frame, DojoTerminal* t );
 //DojoTerminal* terminal_new(CompWinFrame* frame);
 
 void terminal_print( DojoTerminal* terminal, const ascii* string );
@@ -62,5 +63,8 @@ void terminal_on_resize( void* app, u32 w, u32 h );
 
 void terminal_destroy( void* terminal );
 void terminal_render( void* terminal );
+
+void terminal_new_proc_cfg( DojoProcessSpawnConfig* cfg );
+void main_terminal( DojoProcess* self );
 
 #endif

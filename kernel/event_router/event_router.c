@@ -3,7 +3,7 @@
 static EventRouter e_router = {0};
 
 void init_event_router( u64 tatami_pid ) {
-    e_router.proc_sensei = get_processes_sensei();;
+    e_router.proc_sensei = get_processes_sensei();
     e_router.tatami_pid  = tatami_pid;
 };
 
@@ -11,13 +11,16 @@ EventRouter* get_event_router() {
     return &e_router;
 };
 
-void event_router_dispatch_event( EventRouter* r, DojoEvent* ev ) {
+void event_router_dispatch_event( DojoEvent* ev ) {
+    EventRouter* r = &e_router;
 
     switch ( ev->type ) {
-        case DJ_EVENT_KEYBOARD: {
+        case DJ_EVENT_KEYBOARD: 
+        case DJ_EVENT_WINDOW_CLOSE:
+        case DJ_EVENT_WINDOW_RESIZE: {
             DojoProcess* p = 
                 processes_get( r->tatami_pid );
-
+            
             if ( p )
                 dojo_process_push_event(p, ev);
 
@@ -25,7 +28,7 @@ void event_router_dispatch_event( EventRouter* r, DojoEvent* ev ) {
         }
         case DJ_EVENT_PROCESS_MESSAGE: {
             DojoProcess* p =
-                processes_get( ev->message.from_pid );
+                processes_get( ev->message.to_pid );
             if ( p )
                 dojo_process_push_event(p, ev);
 
@@ -47,6 +50,8 @@ void event_router_poll() {
             .keyboard   = key_ev,
         };
 
-        event_router_dispatch_event( get_event_router(), &ev );
+        EventRouter* er = get_event_router();
+        
+        event_router_dispatch_event( &ev );
     }
 }

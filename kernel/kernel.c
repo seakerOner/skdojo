@@ -3,6 +3,7 @@
 #include "event_router/event_router.h"
 #include "interrupts/k_interrupts.h"
 #include "inttype.h"
+#include "keyboard/keyboard_sensei.h"
 #include "memory/kata.h"
 #include "terminal/terminal.h"
 #include "themes/themes.h"
@@ -23,6 +24,9 @@ void kmain( BiosBootInfo* boot_info ) {
 
     init_interrupts_x86();
 
+    printk_init();
+
+    keyboard_sensei_init();
     start_time_sensei();
     create_processes_sensei();
     VideoSensei* sensei_v = create_video_sensei();
@@ -30,31 +34,14 @@ void kmain( BiosBootInfo* boot_info ) {
     // everything below this line must be modularized
 
     DojoProcessSpawnConfig tatami_cfg = {
+        .type  = NATIVE_PROC,
         .entry = tatami_main,
-        .type  = NATIVE_PROC
+        .name  = "tatami",
     };
-    dojo_set_theme( THEME_DARKMODE );
 
-    DojoProcess* p_tatami = process_spawn(&tatami_cfg);
+    DojoProcess* p_tatami = process_spawn( &tatami_cfg );
 
     init_event_router( p_tatami->pid );
-
-    CompWinFrame* root_win_frame   = compositor_create_frame_current_row( tatami->cmp_sensei );
-    CompWinFrame* second_win_frame = compositor_create_frame_current_row( tatami->cmp_sensei );
-
-    if ( !root_win_frame || !second_win_frame )
-        while (1);  // hang
-
-    DojoTerminal root_terminal   = {0};
-    terminal_new( root_win_frame, &root_terminal );
-    DojoTerminal second_terminal = {0};
-    terminal_new( second_win_frame, &second_terminal );
-
-    u32 root_t_comp_tag          = root_terminal.frame->id;
-    compositor_focus_frame( tatami->cmp_sensei, root_t_comp_tag );
-
-    terminal_print( &root_terminal, KSTR( "Welcome to the Dojo!\n>Using Tatami\nContact: seakerone@proton.me\n\n"  ));
-    terminal_putc( &root_terminal, '>' );
 
     while ( 1 ) {
         event_router_poll();

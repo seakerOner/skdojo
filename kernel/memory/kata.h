@@ -52,6 +52,10 @@ typedef struct {
 #define ORDER_512MB  17
 #define ORDER_1GB    18
 
+#define KATA_DEFAULT_PAGE_SIZE ( KB( 4 ) )
+
+#define ORDER_TO_BYTES( order ) ( ( KATA_DEFAULT_PAGE_SIZE ) << order )
+
 KataAllocator* kata_init();
 
 void* kata_alloc( u64 order, boolean raw_mode );

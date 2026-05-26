@@ -17,6 +17,7 @@
 #include "tatami/tatami.h"
 #include "printk/printk.h"
 
+
 void kmain( BiosBootInfo* boot_info ) {
     MemorySensei* sensei_mem = create_memory_sensei( boot_info );
     kata_populate_regions( boot_info );  // ^^ populate kata in mem sensei
